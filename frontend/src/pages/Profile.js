@@ -1,61 +1,82 @@
 import React, { useEffect, useState } from "react";
+import "./Profile.css";
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-function Profile() {
-  const [user, setUser] = useState(null);
-  const [message, setMessage] = useState("Loading...");
+export default function Profile() {
+  const [collections, setCollections] = useState({ liked: [], watchlist: [] });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMe = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setMessage("No token found. Please login first.");
-        return;
-      }
-
+    async function load() {
       try {
-        const response = await fetch(`${API_URL}/auth/me`, {
+        const res = await fetch("http://localhost:8000/user/collections", {
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          setMessage(data.detail || "Failed to load profile");
+        if (!res.ok) {
+          console.error("API ERROR:", res.status);
+          setCollections({ liked: [], watchlist: [] });
+          setLoading(false);
           return;
         }
 
-        setUser(data);
-        setMessage("");
-      } catch (error) {
-        console.error("Profile fetch error:", error);
-        setMessage("Server error");
-      }
-    };
+        const data = await res.json();
 
-    fetchMe();
+        setCollections({
+          liked: Array.isArray(data.liked) ? data.liked : [],
+          watchlist: Array.isArray(data.watchlist) ? data.watchlist : [],
+        });
+      } catch (error) {
+        console.error("Fetch ERROR:", error);
+        setCollections({ liked: [], watchlist: [] });
+      }
+
+      setLoading(false);
+    }
+
+    load();
   }, []);
 
-  return (
-    <div className="container">
-      <h1 className="page-title">👤 Profile</h1>
+  if (loading) return <div className="profile-page">Yükleniyor...</div>;
 
-      {!user ? (
-        <p>{message}</p>
-      ) : (
-        <div style={{ fontSize: "18px", marginTop: "20px" }}>
-          <p><strong>Username:</strong> {user.username}</p>
-          <p><strong>Name:</strong> {user.name}</p>
-          <p><strong>Email:</strong> {user.email}</p>
-        </div>
-      )}
+  return (
+    <div className="profile-page">
+      <h1>Koleksiyonların</h1>
+
+      {/* Beğenilenler */}
+      <section>
+        <h2>❤️ Beğendiğin Filmler</h2>
+        {collections.liked.length === 0 ? (
+          <p style={{ color: "#bbb" }}>Henüz beğenilmiş film yok.</p>
+        ) : (
+          <div className="grid">
+            {collections.liked.map((m) => (
+              <div className="movie-card" key={m.id}>
+                <img src={`https://image.tmdb.org/t/p/w300${m.poster_path}`} />
+                <p>{m.title}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Watchlist */}
+      <section>
+        <h2>📌 İzleme Listen</h2>
+        {collections.watchlist.length === 0 ? (
+          <p style={{ color: "#bbb" }}>Listen boş.</p>
+        ) : (
+          <div className="grid">
+            {collections.watchlist.map((m) => (
+              <div className="movie-card" key={m.id}>
+                <img src={`https://image.tmdb.org/t/p/w300${m.poster_path}`} />
+                <p>{m.title}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-
-export default Profile;

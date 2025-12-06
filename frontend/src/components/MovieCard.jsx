@@ -1,26 +1,20 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./MovieCard.css";
 
-function MovieCard({ id, title, poster, rating }) {
-  const navigate = useNavigate();
-
+export default function MovieCard({ id, title, poster_path, vote_average }) {
   return (
-    <div
-      className="movie-card"
-      onClick={() => navigate(`/movies/${id}`)}
-    >
-      <img
-        src={poster}
-        className="movie-poster"
-        alt={title}
-      />
-      <div className="movie-info">
-        <h3 className="movie-title">{title}</h3>
-        <p className="movie-rating">{rating ?? "Unknown"}</p>
+    <Link to={`/movies/${id}`} className="movie-card">
+      <div className="poster-wrap">
+        <img
+          src={`https://image.tmdb.org/t/p/w500${poster_path}`}
+          alt={title}
+          className="poster"
+        />
+        <span className="rating">⭐ {vote_average?.toFixed(1)}</span>
       </div>
-    </div>
+
+      <h3 className="movie-title">{title}</h3>
+    </Link>
   );
 }
-
-export default MovieCard;

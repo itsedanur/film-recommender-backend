@@ -1,0 +1,51 @@
+.watchlist-page {
+  padding: 40px;
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #e50914;
+}
+
+.section-title {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #ff2a2a;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  gap: 18px;
+}
+
+.movie-card {
+  background: #111;
+  padding: 8px;
+  border-radius: 10px;
+  text-align: center;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.movie-card:hover {
+  box-shadow: 0 0 15px #e50914;
+  transform: scale(1.05);
+}
+
+.movie-card img {
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.movie-card p {
+  margin-top: 8px;
+  font-size: 14px;
+}

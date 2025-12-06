@@ -1,90 +1,78 @@
 import React, { useState } from "react";
+import { apiFetch } from "../api";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "./Auth.css";
 
-function LoginPage() {
-  const API_URL = process.env.REACT_APP_API_URL;
-
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = async () => {
+  async function handleLogin(e) {
+    e.preventDefault();
+    setMessage("");
+
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const data = await apiFetch("/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: { email, password },
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data.detail) {
-          if (Array.isArray(data.detail)) setMessage(data.detail[0].msg);
-          else if (typeof data.detail === "object") setMessage(data.detail.msg);
-          else setMessage(data.detail);
-        } else setMessage("Login failed");
-        return;
-      }
-
+      // Token sakla
       localStorage.setItem("token", data.access_token);
+
+      // Kullanıcı bilgisi backend’den çek (auth/me)
+      const me = await apiFetch("/auth/me");
+
+      login(me, data.access_token);
+
       setMessage("Login successful!");
+      setTimeout(() => navigate("/"), 800);
 
-      setTimeout(() => {
-        window.location.href = "/profile";
-      }, 800);
-
-    } catch (error) {
-      console.error("Login error:", error);
-      setMessage("Server error");
+    } catch (err) {
+      console.log("LOGIN ERROR:", err);
+      setMessage(err.detail || "Login failed.");
     }
-  };
+  }
 
+  return (
+    <div className="auth-background">
+      <div className="auth-card">
+        <h1 className="auth-title">Sign In</h1>
 
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            className="auth-input"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-return (
-  <div className="page-container">
-    <h1 className="page-title">🔐 Login</h1>
+          <input
+            type="password"
+            className="auth-input"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-    <input
-      name="email"
-      type="email"
-      placeholder="Email"
-      value={form.email}
-      onChange={handleChange}
-      className="form-input"
-    />
+          <button className="auth-button">Sign In</button>
+        </form>
 
-    <input
-      name="password"
-      type="password"
-      placeholder="Password"
-      value={form.password}
-      onChange={handleChange}
-      className="form-input"
-    />
+        {message && <p className="auth-message">{message}</p>}
 
-    <button onClick={handleLogin} className="form-button">
-      Login
-    </button>
-
-    {message && (
-      <p style={{ marginTop: "20px", color: "yellow" }}>{message}</p>
-    )}
-  </div>
-);
-
+        <p className="auth-switch">
+          New to FilmRec?
+          <span onClick={() => navigate("/register")}> Sign up now.</span>
+        </p>
+      </div>
+    </div>
+  );
 }
 
-export default LoginPage;
-
-
-
-
-
+export default Login;

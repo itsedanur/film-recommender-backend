@@ -1,29 +1,66 @@
-# ...existing code...
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
-from app.database import get_db
-from app.models.list import ListItem
-from app.schemas.lists import ListCreate
+
+from app.models.lists import ListItem
+from app.models.movie import Movie
+from app.schemas.movies import MovieOut
+from app.core.security import get_current_user  # sende hangi dosyadaysa oradan import et
+from app.db import SessionLocal
+from app.db import get_db
+
+
+
 
 router = APIRouter(prefix="/lists", tags=["Lists"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def add_list_item(data: ListCreate, db: Session = Depends(get_db)):
-    # TODO: gerçek kullanıcı id'sini auth'dan al; şu an 1 geçici
-    item = ListItem(movie_id=data.movie_id, type=data.type, user_id=1)
-    db.add(item)
-    try:
-        db.commit()
-        db.refresh(item)
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="DB constraint error")
-    except Exception:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+@router.post("/toggle/{movie_id}")
+def toggle_list_item(
+    movie_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
 
-    return {"message": "Added to list", "id": item.id}
-# ...existing code...
+    item = (
+        db.query(ListItem)
+        .filter(ListItem.user_id == current_user.id, ListItem.movie_id == movie_id)
+        .first()
+    )
+
+    if item:
+        db.delete(item)
+        db.commit()
+        return {"in_list": False}
+
+    new_item = ListItem(user_id=current_user.id, movie_id=movie_id)
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+
+    return {"in_list": True}
+
+
+@router.get("/", response_model=list[MovieOut])
+def my_list(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    items = (
+        db.query(ListItem)
+        .filter(ListItem.user_id == current_user.id)
+        .all()
+    )
+    movie_ids = [i.movie_id for i in items]
+    if not movie_ids:
+        return []
+
+    movies = (
+        db.query(Movie)
+        .filter(Movie.id.in_(movie_ids))
+        .all()
+    )
+    return movies

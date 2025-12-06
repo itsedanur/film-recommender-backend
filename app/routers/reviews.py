@@ -1,27 +1,39 @@
+# app/routers/reviews.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
-from app.database import get_db
 from app.models.review import Review
-from app.schemas.reviews import ReviewCreate
+from app.models.movie import Movie
+from app.models.users import User
+from app.utils.nlp import is_clean_text
+from app.core.jwt import get_current_user
+from app.services.nlp_filter import is_clean
+from app.db import SessionLocal
+from app.db import get_db
+
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
+@router.post("/add/{movie_id}")
+def add_review(movie_id: int, text: str, 
+               db: Session = Depends(get_db),
+               current_user: User = Depends(get_current_user)):
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def add_review(data: ReviewCreate, db: Session = Depends(get_db)):
-    # TODO: gerçek kullanıcı id'sini auth'dan al; şu an 1 geçici
-    new_review = Review(text=data.text, movie_id=data.movie_id, user_id=1)
-    db.add(new_review)
-    try:
-        db.commit()
-        db.refresh(new_review)
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="DB constraint error")
-    except Exception:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+    if not is_clean_text(text):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Yorum küfür/argo içeriyor. Lütfen daha uygun bir dil kullanın."
+        )
 
-    return {"message": "Review  added", "id": new_review.id}
+    movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    if not movie:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Film bulunamadı")
+
+    review = Review(text=text, user_id=current_user.id, movie_id=movie_id)
+    db.add(review)
+    db.commit()
+    db.refresh(review)
+
+    return {"message": "Yorum eklendi", "review": review}
+
+

@@ -1,40 +1,113 @@
+/* === Ana navbar === */
 .navbar {
-  width: 100%;
-  height: 70px;
-  background: #0f0f0f;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 25px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.6);
+  justify-content: space-between;
+  padding: 14px 32px;
+  background-color: #0d0d0d; 
+  box-shadow: 0 2px 12px rgba(255, 0, 0, 0.15);
   position: sticky;
   top: 0;
   z-index: 999;
 }
 
-.logo {
+/* === LOGO === */
+.logo-box {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+}
+
+.logo-icon {
+  background: #d63031;
+  padding: 9px;
+  border-radius: 10px;
+  font-size: 18px;
+  color: white;
+}
+
+.logo-text {
   font-size: 26px;
-  font-weight: bold;
-  color: #ff004f;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.logo-film {
+  color: white;
+}
+
+.logo-rec {
+  color: #d63031;
+}
+
+/* === Menü === */
+.nav-links a {
+  margin: 0 12px;
+  color: #fff;
   text-decoration: none;
-  margin-right: 30px;
+  font-size: 16px;
+  transition: 0.25s;
+  padding-bottom: 4px;
 }
 
-.nav-left a, .nav-right a {
-  color: #f1f1f1;
+.nav-links a:hover {
+  color: #d63031;
+  border-bottom: 2px solid #d63031;
+}
+
+/* === Login / Register Buttons === */
+.btn-login,
+.btn-register {
+  padding: 6px 14px;
+  border-radius: 6px;
   text-decoration: none;
-  margin-right: 20px;
-  font-size: 15px;
-  transition: 0.25s ease;
+  margin-left: 8px;
+  font-size: 14px;
 }
 
-.nav-left a:hover, .nav-right a:hover {
-  color: #ff004f;
+.btn-login {
+  border: 1px solid #d63031;
+  color: #d63031;
 }
 
-.register-btn {
-  padding: 8px 14px;
-  background: #ff004f;
-  color: white !important;
-  border-radius: 8px;
+.btn-login:hover {
+  background: #d63031;
+  color: white;
+}
+
+.btn-register {
+  background: #d63031;
+  color: white;
+}
+
+.btn-register:hover {
+  opacity: 0.8;
+}
+
+/* === User Box === */
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+}
+
+.username {
+  font-weight: 600;
+  color: #d63031;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid #d63031;
+  color: #d63031;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background: #d63031;
+  color: white;
 }

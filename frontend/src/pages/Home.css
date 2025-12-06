@@ -1,21 +1,135 @@
+/* ---------------------------------------------------
+   GENEL ARKA PLAN
+----------------------------------------------------- */
 .home-container {
-  padding: 30px;
-  margin-top: 20px;
-}
-
-.section {
-  margin-bottom: 50px;
-}
-
-.section-title {
-  font-size: 26px;
-  font-weight: 700;
+  background: #000;
   color: #fff;
-  margin-bottom: 20px;
+  min-height: 100vh;
+  padding-bottom: 60px;
 }
 
+
+/* ---------------------------------------------------
+   HERO ALANI – ORTALANMIŞ SÜPER TASARIM
+----------------------------------------------------- */
+.hero-box {
+  width: 100%;
+  padding: 90px 20px;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(180deg, #0a0a0a, #000);
+  text-align: center;
+}
+
+.hero-overlay {
+  max-width: 820px;
+}
+
+.hero-title {
+  font-size: 64px;
+  font-weight: 900;
+  color: #ff2a2a;
+  text-shadow: 0 0 25px #ff2a2a80;
+  margin-bottom: 18px;
+}
+
+.hero-sub {
+  font-size: 20px;
+  line-height: 1.6;
+  color: #ddd;
+  opacity: 0.9;
+  margin-bottom: 35px;
+}
+
+
+/* ---------------------------------------------------
+   SEARCH BOX – PREMIUM TASARIM
+----------------------------------------------------- */
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.search-box input {
+  width: 360px;
+  padding: 12px 15px;
+  font-size: 16px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  outline: none;
+  transition: 0.25s;
+}
+
+.search-box input:focus {
+  border-color: #ff2a2a;
+  box-shadow: 0 0 12px #ff2a2a60;
+}
+
+.search-box button {
+  padding: 12px 18px;
+  background: #ff2a2a;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.search-box button:hover {
+  background: #ff3b3b;
+  box-shadow: 0 0 12px #ff2a2a80;
+}
+
+
+/* ---------------------------------------------------
+   KATEGORİ SATIRI – ortalı & şık
+----------------------------------------------------- */
+.category-row {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cat-btn {
+  background: #111;
+  color: #ddd;
+  border: 1px solid #333;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.cat-btn:hover {
+  border-color: #ff2a2a;
+  color: #ff2a2a;
+}
+
+
+/* ---------------------------------------------------
+   FİLM GRIDİ
+----------------------------------------------------- */
 .movie-grid {
+  width: 100%;
+  max-width: 1300px;
+  margin: 30px auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 25px;
+  padding: 0 20px;
+}
+.home-container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.hero-box {
+  width: 100%;
+  margin: 0 auto;
 }

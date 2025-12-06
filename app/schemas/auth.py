@@ -1,20 +1,16 @@
-# ...existing code...
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, EmailStr
 
-    
 class UserRegister(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     password: str
-    name: Optional[str] = None   # zorunlu değil yapıldı
-    
+
 
 class UserLogin(BaseModel):
-    email: str
+    email: EmailStr
     password: str
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
-# ...existing code...

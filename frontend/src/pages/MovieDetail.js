@@ -1,105 +1,179 @@
+// frontend/src/pages/MovieDetail.js
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./MovieDetail.css";
-import { useAuth } from "../context/AuthContext";
 
-function MovieDetail() {
+export default function MovieDetail() {
   const { id } = useParams();
-  const { token } = useAuth();
+  const navigate = useNavigate();
 
   const [movie, setMovie] = useState(null);
+  const [similar, setSimilar] = useState([]);
   const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(true);
-  const API_URL = process.env.REACT_APP_API_URL;
 
-  // Film bilgilerini çek
   useEffect(() => {
-    fetch(`${API_URL}/movies/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
+    async function load() {
+      try {
+        // Film detay
+        const res = await fetch(`http://localhost:8000/movies/${id}`);
+        const data = await res.json();
         setMovie(data);
-        setLoading(false);
-      })
-      .catch((err) => console.error("Movie fetch error:", err));
-  }, [API_URL, id]);
 
-  // --- YORUM EKLEME ---
-  const addComment = async () => {
-    if (!comment.trim()) return;
+        // Benzer filmler
+        const sim = await fetch(`http://localhost:8000/movies/${id}/similar`);
+        const simData = await sim.json();
 
-    const res = await fetch(`${API_URL}/reviews/add`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        movie_id: id,
-        text: comment,
-      }),
-    });
-
-    if (res.ok) {
-      alert("Yorum eklendi!");
-      setComment("");
-    } else {
-      alert("Yorum eklenirken hata oluştu.");
+        // Array değilse çöker — o yüzden kontrol
+        setSimilar(Array.isArray(simData) ? simData.slice(0, 6) : []);
+      } catch (err) {
+        console.error("Film yüklenemedi:", err);
+      }
     }
-  };
 
-  // --- BEĞENME ---
-  const toggleLike = async () => {
-    const res = await fetch(`${API_URL}/ratings/like/${id}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.ok) alert("Beğeni gönderildi ✔️");
-  };
+    load();
+  }, [id]);
 
-  // --- LİSTEYE EKLE ---
-  const addToList = async () => {
-    const res = await fetch(`${API_URL}/lists/add`, {
+  if (!movie) return <div className="loading">Yükleniyor...</div>;
+
+  // -------------------------
+  //   BACKEND LIKE & WATCHLIST
+  // -------------------------
+
+  const handleLike = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Lütfen giriş yap.");
+      navigate("/login");
+      return;
+    }
+
+    const res = await fetch(`http://localhost:8000/user/like/${id}`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ movie_id: id }),
     });
-    if (res.ok) alert("Listeye eklendi ✔️");
+
+    const data = await res.json();
+    alert("❤️ " + (data.message || "İşlem tamamlandı"));
   };
 
-  if (loading) return <h2>Loading...</h2>;
-  if (!movie) return <h2>Film bulunamadı.</h2>;
+  const handleAddList = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Lütfen giriş yap.");
+      navigate("/login");
+      return;
+    }
+
+    const res = await fetch(`http://localhost:8000/user/watchlist/${id}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    alert("📌 " + (data.message || "Listeye eklendi"));
+  };
+
+  // -------------------------
+  //   YORUM
+  // -------------------------
+
+  const handleSendComment = () => {
+    if (!comment.trim()) return;
+    alert("Yorum gönderildi:\n" + comment);
+    setComment("");
+  };
+
+  // -------------------------
+  //    RETURN UI
+  // -------------------------
 
   return (
-    <div className="movie-detail-container">
-      {/* SOL TARAF POSTER */}
-      <img src={movie.poster} alt={movie.title} className="detail-poster" />
+    <div className="detail-page">
+      {/* SOL BLOK */}
+      <div className="left">
+        <img
+          src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+          alt={movie.title}
+          className="detail-poster"
+        />
 
-      {/* SAĞ TARAF BİLGİ */}
-      <div className="detail-info">
-        <h1 className="detail-title">{movie.title}</h1>
-        <p className="detail-genre">🎭 Tür: {movie.genre || "Bilinmiyor"}</p>
-        <p className="detail-rating">⭐ {movie.rating || "0.0"}</p>
-
-        {/* BUTONLAR */}
         <div className="detail-buttons">
-          <button className="like-btn" onClick={toggleLike}>❤️ Beğen</button>
-          <button className="save-btn" onClick={addToList}>➕ Listeye Ekle</button>
+          <button className="btn red" onClick={handleLike}>
+            ❤️ Beğen
+          </button>
+
+          <button className="btn red" onClick={handleAddList}>
+            📌 Listeye Ekle
+          </button>
+        </div>
+      </div>
+
+      {/* SAĞ BLOK */}
+      <div className="right">
+        <h1 className="title">{movie.title}</h1>
+
+        <p className="stats">
+          {movie.release_date} • IMDb {movie.vote_average} •{" "}
+          {movie.vote_count} oy
+        </p>
+
+        <h3>Yönetmen</h3>
+        <p>{movie.directors?.[0]?.name || "Bilinmiyor"}</p>
+
+        <h3>Özet</h3>
+        <p className="overview">{movie.overview}</p>
+
+        {/* Oyuncular */}
+        <h2>Oyuncular</h2>
+        <div className="cast-grid">
+          {movie.cast?.slice(0, 6).map((c, i) => {
+            const img = c.profile_path
+              ? `https://image.tmdb.org/t/p/w300${c.profile_path}`
+              : "/no-actor.png";
+
+            return (
+              <div key={i} className="cast-card">
+                <img src={img} alt={c.name} />
+                <div className="actor-name">{c.name}</div>
+                <div className="actor-role">{c.character}</div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* YORUM ALANI */}
-        <div className="comment-section">
-          <h3>Yorum Yap</h3>
+        {/* Benzer Filmler */}
+        <h2 style={{ marginTop: "40px" }}>Benzer Filmler</h2>
+        <div className="similar-grid">
+          {similar.map((f) => (
+            <div
+              key={f.id}
+              className="similar-card"
+              onClick={() => navigate(`/movies/${f.id}`)}
+            >
+              <img
+                src={`https://image.tmdb.org/t/p/w300${f.poster_path}`}
+                alt={f.title}
+              />
+              <p>{f.title}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Yorum Alanı */}
+        <h2 style={{ marginTop: "40px" }}>Yorum Yap</h2>
+        <div className="comment-box">
           <textarea
-            className="comment-box"
-            placeholder="Yorum yaz..."
+            placeholder="Yorumunu yaz..."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-          ></textarea>
-
-          <button className="comment-btn" onClick={addComment}>
+          />
+          <button className="btn red small" onClick={handleSendComment}>
             Gönder
           </button>
         </div>
@@ -107,5 +181,3 @@ function MovieDetail() {
     </div>
   );
 }
-
-export default MovieDetail;

@@ -1,0 +1,24 @@
+.movie-list-page {
+  background: #000;
+  min-height: 100vh;
+  color: #fff;
+}
+
+.movie-list-inner {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 16px 40px;
+}
+
+.movie-list-title {
+  font-size: 30px;
+  color: #ff3b3b;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 18px;
+}

@@ -1,99 +1,92 @@
-# ...existing code...
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from jose import jwt, JWTError
+from fastapi.security import OAuth2PasswordBearer
 
-from app.database import get_db
+from app.db import get_db
 from app.models.users import User
-
-
-from app.utils.password import hash_password, verify_password
-from app.utils.jwt import create_access_token, SECRET_KEY, ALGORITHM
+from app.core.security import hash_password, verify_password
+from app.core.jwt import create_access_token, decode_access_token
 from app.schemas.auth import UserRegister, UserLogin, Token
+from app.schemas.users import UserOut
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-# ==========================
+
+# --------------------------------------------------------------------
+# CURRENT USER UTILITY
+# --------------------------------------------------------------------
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+
+    payload = decode_access_token(token)
+    if not payload or "user_id" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user = db.query(User).filter(User.id == payload["user_id"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
+
+# --------------------------------------------------------------------
 # REGISTER
-# ==========================
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+# --------------------------------------------------------------------
+@router.post("/register", response_model=Token)
 def register(data: UserRegister, db: Session = Depends(get_db)):
+
+    # email exists?
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(400, "Email already exists")
+
+    # username exists?
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(400, "Username already exists")
 
+    # create user
     new_user = User(
         username=data.username,
         email=data.email,
-        hashed_password=hash_password(data.password),
-        name=data.name,
+        name=data.username,    # otomatik doldur
+        hashed_password=hash_password(data.password)
     )
 
-    db.add(new_user)
     try:
+        db.add(new_user)
         db.commit()
         db.refresh(new_user)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(400, "User creation failed due to DB constraint")
-    except Exception:
-        db.rollback()
-        raise HTTPException(500, "Internal Server Error")
+        raise HTTPException(400, "User creation failed")
 
-    token = create_access_token({"id": new_user.id})
-    return Token(access_token=token)
+    # create token
+    token = create_access_token({"user_id": new_user.id})
+    return Token(access_token=token, token_type="bearer")
 
 
-# ==========================
+# --------------------------------------------------------------------
 # LOGIN
-# ==========================
+# --------------------------------------------------------------------
 @router.post("/login", response_model=Token)
 def login(data: UserLogin, db: Session = Depends(get_db)):
+
     user = db.query(User).filter(User.email == data.email).first()
-    if not user or not verify_password(data.password, user.hashed_password):
+
+    if not user:
         raise HTTPException(400, "Invalid email or password")
 
-    token = create_access_token({"id": user.id})
-    return Token(access_token=token)
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(400, "Invalid email or password")
+
+    token = create_access_token({"user_id": user.id})
+    return Token(access_token=token, token_type="bearer")
 
 
-# ==========================
-# GET CURRENT USER /auth/me
-# ==========================
-@router.get("/me")
-def get_me(
-    authorization: str = Header(None),
-    db: Session = Depends(get_db),
-):
-    """
-    Returns current logged-in user.
-    Requires: Authorization: Bearer <token>
-    """
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(401, "Missing or invalid Authorization header")
-
-    token = authorization.split(" ", 1)[1]
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("id")
-    except JWTError:
-        raise HTTPException(401, "Invalid token")
-
-    if not user_id:
-        raise HTTPException(401, "Invalid token payload")
-
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(404, "User not found")
-
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "name": user.name,
-    }
-# ...existing code...
+# --------------------------------------------------------------------
+# GET CURRENT LOGGED-IN USER
+# --------------------------------------------------------------------
+@router.get("/me", response_model=UserOut)
+def me(current_user: User = Depends(get_current_user)):
+    return current_user

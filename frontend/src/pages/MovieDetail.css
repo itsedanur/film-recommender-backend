@@ -1,84 +1,130 @@
-.movie-detail-container {
+.detail-page {
   display: flex;
-  gap: 30px;
+  gap: 40px;
   padding: 40px;
-  color: white;
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
 }
+
+.left { width: 320px; }
 
 .detail-poster {
-  width: 300px;
-  border-radius: 12px;
-  box-shadow: 0px 0px 15px rgba(0,0,0,0.6);
-}
-
-.detail-info {
-  flex: 1;
-}
-
-.detail-title {
-  font-size: 32px;
-  margin-bottom: 10px;
-}
-
-.detail-genre {
-  font-size: 18px;
-  margin-bottom: 5px;
-}
-
-.detail-rating {
-  font-size: 22px;
-  margin-bottom: 20px;
-  color: #f5c518;
+  width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 0 30px #e50914aa;
 }
 
 .detail-buttons {
   display: flex;
-  gap: 15px;
-  margin-bottom: 30px;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.like-btn {
-  background: #ff006e;
-  padding: 10px 20px;
+.btn.red {
+  background: #e50914;
   border: none;
+  padding: 12px;
+  color: #fff;
   border-radius: 8px;
-  color: white;
-  cursor: pointer;
   font-size: 16px;
-}
-
-.save-btn {
-  background: #0099ff;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  color: white;
   cursor: pointer;
-  font-size: 16px;
+  font-weight: 600;
+  transition: 0.2s;
 }
 
-.comment-section {
-  margin-top: 30px;
+.btn.red:hover { background: #ff2a2a; }
+
+.btn.red.small { padding: 8px; font-size: 14px; }
+
+.right { flex: 1; }
+
+.title { font-size: 32px; font-weight: 700; }
+
+.stats { color: #bbb; margin-bottom: 20px; }
+
+.overview {
+  line-height: 1.5;
+  margin-bottom: 25px;
+  font-size: 15px;
 }
 
-.comment-box {
-  width: 100%;
-  height: 120px;
+/* Oyuncular */
+.cast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  gap: 18px;
+}
+
+.cast-card {
   background: #111;
-  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  transition: 0.2s;
+}
+
+.cast-card:hover {
+  box-shadow: 0 0 15px #e50914;
+}
+
+.cast-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.actor-name { margin-top: 8px; font-size: 15px; font-weight: 600; }
+.actor-role { font-size: 13px; opacity: 0.7; }
+
+/* Benzer Filmler */
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  gap: 18px;
+}
+
+.similar-card {
+  background: #111;
+  padding: 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.2s;
+}
+
+.similar-card:hover {
+  box-shadow: 0 0 18px #e50914;
+  transform: translateY(-3px);
+}
+
+.similar-card img {
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.similar-card p { margin-top: 8px; font-size: 14px; }
+
+/* Yorum Kutusu */
+.comment-box {
+  margin-top: 10px;
+  background: #111;
   padding: 15px;
   border-radius: 10px;
-  color: white;
-  font-size: 16px;
 }
 
-.comment-btn {
-  background: #00c853;
-  margin-top: 12px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
+.comment-box textarea {
+  width: 100%;
+  height: 90px;
+  resize: none;
+  background: #222;
   color: white;
-  font-size: 16px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
 }

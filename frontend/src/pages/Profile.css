@@ -1,0 +1,55 @@
+.profile-page {
+  padding: 40px;
+  background: #000;
+  color: white;
+  min-height: 100vh;
+}
+
+h1 {
+  color: #e50914;
+  margin-bottom: 30px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+section {
+  margin-bottom: 40px;
+}
+
+h2 {
+  color: #ff4040;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  gap: 20px;
+}
+
+.movie-card {
+  background: #111;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+  transition: 0.2s;
+}
+
+.movie-card:hover {
+  box-shadow: 0 0 20px #e50914;
+  transform: scale(1.05);
+}
+
+.movie-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.movie-card p {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}

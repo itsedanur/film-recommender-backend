@@ -1,28 +1,61 @@
 import os
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
-TMDB_V4_TOKEN = os.getenv("TMDB_V4_TOKEN")
+# ======================================================
+# ⭐ TÜRKÇE DETAY + OYUNCULAR + YÖNETMEN
+# ======================================================
+def get_movie_details(tmdb_id: int):
+    if not tmdb_id:
+        return {"director": "Bilinmiyor", "cast": [], "overview": None}
 
-HEADERS = {
-    "Authorization": f"Bearer {TMDB_V4_TOKEN}",
-    "accept": "application/json"
-}
+    base = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
 
-def get_poster_url(title: str):
-    if not TMDB_V4_TOKEN:
-        print("❌ TMDB_V4_TOKEN bulunamadı!")
-        return None
+    # Film detayı
+    detail_url = f"{base}?api_key={TMDB_API_KEY}&language=tr-TR"
 
-    url = f"https://api.themoviedb.org/3/search/movie?query={title}&include_adult=false&language=en-US&page=1"
+    # Oyuncular + yönetmen
+    credits_url = f"{base}/credits?api_key={TMDB_API_KEY}&language=tr-TR"
 
-    response = requests.get(url, headers=HEADERS).json()
+    detail_res = requests.get(detail_url).json()
+    credits_res = requests.get(credits_url).json()
 
-    results = response.get("results")
-    if results and len(results) > 0:
-        poster_path = results[0].get("poster_path")
-        if poster_path:
-            return f"https://image.tmdb.org/t/p/w500{poster_path}"
+    # ----- Yönetmen -----
+    director = next(
+        (c.get("name") for c in credits_res.get("crew", []) if c.get("job") == "Director"),
+        "Bilinmiyor"
+    )
 
-    return None
+    # ----- Oyuncular -----
+    cast_list = []
+    for c in credits_res.get("cast", [])[:15]:
+        cast_list.append({
+            "name": c.get("name"),
+            "character": c.get("character"),
+            "profile_path": c.get("profile_path"),
+        })
+
+    return {
+        "director": director,
+        "cast": cast_list,
+        "overview": detail_res.get("overview"),
+        "title": detail_res.get("title"),
+        "poster_path": detail_res.get("poster_path"),
+        "release_date": detail_res.get("release_date"),
+    }
+
+
+# ======================================================
+# ⭐ IMDb Rating + Oy Sayısı
+# ======================================================
+def get_movie_stats(tmdb_id: int):
+    url = f"https://api.themoviedb.org/3/movie/{tmdb_id}?api_key={TMDB_API_KEY}&language=tr-TR"
+    res = requests.get(url).json()
+    return {
+        "vote_count": res.get("vote_count"),
+        "vote_average": res.get("vote_average"),
+    }

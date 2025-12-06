@@ -1,105 +1,31 @@
-/* Temel Reset */
-* {
-  box-sizing: border-box;
-}
-
 html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  overflow-x: hidden; /* yatay kaymayı tamamen kapatır */
-  background: #0d0d0d;
-  color: white;
-  font-family: "Inter", sans-serif;
+  overflow-x: hidden !important;
+  background: #000;
 }
 
-/* ======================= */
-/*       NAVBAR             */
-/* ======================= */
 
-.navbar {
-  width: 100%;
-  background: linear-gradient(90deg, #8a2be2, #ff0080, #007bff);
-  background-size: 100% 100%; /* 🔥 Safari overflow fix */
-  background-repeat: no-repeat;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  overflow: hidden;
+
+
+
+body {
+  background: #000;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-.nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.nav-logo {
-  font-size: 26px;
-  font-weight: bold;
-  white-space: nowrap;
-  color: white;
-}
-
-.nav-links {
-  display: flex;
-  gap: 18px;
-}
-
-.nav-link {
-  color: white;
+a {
+  color: #fff;
   text-decoration: none;
-  font-size: 18px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: 0.3s;
-  white-space: nowrap;
 }
 
-.nav-link:hover {
-  background: rgba(255, 255, 255, 0.2);
+a:hover {
+  color: #e50914;
 }
 
-/* ======================= */
-/*      PAGE CONTAINER      */
-/* ======================= */
-
-.page-container {
-  max-width: 450px;      /* 🔥 artık sabit genişlik */
-  width: 100%;
-  margin: 50px auto;
-  padding: 20px;
-  background: #111;
-  border-radius: 10px;
-  overflow: hidden;      /* içeride taşma olursa engeller */
-}
-
-/* Başlık */
-.page-title {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 25px;
-}
-
-/* Form Ayarları */
-.form-input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border: none;
-}
-
-.form-button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 6px;
-  background: #444;
-  border: none;
-  color: white;
-  margin-top: 15px;
+button {
   cursor: pointer;
 }

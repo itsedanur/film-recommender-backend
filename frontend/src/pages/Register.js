@@ -1,100 +1,100 @@
+// frontend/src/components/register.js
+
 import React, { useState } from "react";
+import { apiFetch } from "../api";
+import { useNavigate } from "react-router-dom";
+import "./Auth.css";
 
-function RegisterPage() {
-  const API_URL = process.env.REACT_APP_API_URL;
-
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    name: ""
-  });
-
+function Register() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const navigate = useNavigate();
 
-  const handleRegister = async () => {
+  async function handleRegister(e) {
+    e.preventDefault();
+    setMessage("Registering...");
+
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
+      const data = await apiFetch("/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: {
+          username,
+          email,
+          password
+        }
       });
 
-      const data = await response.json();
+      // Kayıt başarılı
+      setMessage("Registration successful! Redirecting to login...");
+      // Genellikle token alınır ve login sayfasına yönlendirilir.
+      setTimeout(() => navigate("/login"), 800);
 
-      if (!response.ok) {
-        const errorMsg = Array.isArray(data.detail)
-          ? data.detail[0].msg
-          : data.detail;
+    } catch (err) {
+      console.log("REGISTER ERROR:", err);
 
-        setMessage(errorMsg || "Registration failed");
-        return;
+      if (err.status === 422) {
+        // Doğrulama hatası (Validation Error) - Fast API'de genellikle parola/format hatası
+        setMessage("Input validation failed. Check password length (min 6 chars) and ensure email is valid.");
+      } else if (err.status === 400) {
+        // Eğer backend 400 hatasını sadece e-posta çakışması için kullanıyorsa:
+        setMessage("This email is already registered.");
+      } else if (err.status === 0) {
+        // Bağlantı hatası
+        setMessage("Connection failed. The backend server might be offline.");
+      } else {
+        // Diğer beklenmeyen hatalar
+        setMessage(`Registration failed: ${err.detail || "An unexpected error occurred."}`);
       }
-
-      setMessage("Registered successfully!");
-    } catch (error) {
-      console.error("Register error:", error);
-      setMessage("Server error");
     }
-  };
+  }
 
   return (
-  <div className="page-container">
-    <h1 className="page-title">📝 Register</h1>
+    <div className="auth-background">
+      <div className="auth-card">
+        <h1 className="auth-title">Sign Up</h1>
 
-    <input
-      name="username"
-      type="text"
-      placeholder="Username"
-      value={form.username}
-      onChange={handleChange}
-      className="form-input"
-    />
+        <form onSubmit={handleRegister}>
+          <input
+            className="auth-input"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
 
-    <input
-      name="name"
-      type="text"
-      placeholder="Full Name (Optional)"
-      value={form.name}
-      onChange={handleChange}
-      className="form-input"
-    />
+          <input
+            type="email"
+            className="auth-input"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-    <input
-      name="email"
-      type="email"
-      placeholder="Email"
-      value={form.email}
-      onChange={handleChange}
-      className="form-input"
-    />
+          <input
+            type="password"
+            className="auth-input"
+            placeholder="Password (min 6 chars)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-    <input
-      name="password"
-      type="password"
-      placeholder="Password"
-      onChange={handleChange}
-      className="form-input"
-    />
+          <button type="submit" className="auth-button">Sign Up</button>
+        </form>
 
-    <button onClick={handleRegister} className="form-button">
-      Register
-    </button>
+        {message && <p className={`auth-message ${message.includes("successful") ? 'success' : 'error'}`}>{message}</p>}
 
-    {message && (
-      <p style={{ marginTop: "20px", color: "yellow" }}>{message}</p>
-    )}
-  </div>
-);
-
+        <p className="auth-switch">
+          Already have an account?{" "}
+          <span onClick={() => navigate("/login")}>Sign in now.</span>
+        </p>
+      </div>
+    </div>
+  );
 }
 
-export default RegisterPage;
-
-
-
-
+export default Register;

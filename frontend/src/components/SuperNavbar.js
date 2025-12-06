@@ -19,7 +19,7 @@ function SuperNavbar() {
     <nav style={styles.nav}>
       {/* Sol Logo */}
       <div style={styles.logo} onClick={() => navigate("/")}>
-        🎬 <span style={{ fontWeight: "bold" }}>FilmRec</span>
+        🎬 <span style={{ fontWeight: "bold" }}>CineMind</span>
       </div>
 
       {/* Sağ Menü */}

@@ -1,17 +1,27 @@
+# app/schemas/movies.py
 from pydantic import BaseModel, ConfigDict
+from typing import Optional, List, Dict, Any
 
-# Ortak alanlar
+
 class MovieBase(BaseModel):
     title: str
-    genre: str | None = None
-    description: str | None = None
-    poster_url: str | None = None   # ←←← EKLENDİ !!!
+    overview: Optional[str] = None
+    overview_tr: Optional[str] = None   # 🔥 YENİ EKLENDİ
 
-# Film oluşturma
-class MovieCreate(MovieBase):
-    pass
+    poster_path: Optional[str] = None
+    poster_url: Optional[str] = None
+    release_date: Optional[str] = None
 
-# Dışa dönen response modeli
+    vote_average: Optional[float] = None
+    vote_count: Optional[int] = None
+    popularity: Optional[float] = None
+
+    # TMDB’den gelen dict listeler
+    genres: Optional[List[Dict[str, Any]]] = None
+    cast: Optional[List[Dict[str, Any]]] = None
+    directors: Optional[List[Dict[str, Any]]] = None
+
+
 class MovieOut(MovieBase):
     id: int
 

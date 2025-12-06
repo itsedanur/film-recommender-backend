@@ -1,5 +1,7 @@
-from pydantic import BaseModel
+# app/schemas/ratings.py
+from pydantic import BaseModel, conint
+
 
 class RatingCreate(BaseModel):
-    score: int
+    score: conint(ge=1, le=5)  # 1–5 arası puan
     movie_id: int
