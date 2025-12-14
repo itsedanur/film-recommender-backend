@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.core.auth import get_current_user
+from app.core.security import get_current_user
 from app.models.user_collections import UserLikedMovie, UserWatchList
 from app.models.movie import Movie
 
@@ -52,14 +52,38 @@ def add_watchlist(movie_id: int, user=Depends(get_current_user), db: Session = D
     return {"message": "Listeye eklendi 📌"}
 
 
-# 📚 TÜM KOLEKSİYONLAR (BEĞENİLEN + İZLEME LİSTESİ)
+# 📚 TÜM KOLEKSİYONLAR (BEĞENİLEN + İZLEME LİSTESİ + İZLENENLER)
+from app.routers.movies import convert
+from app.models.watched import Watched
+
 @router.get("/collections")
 def user_collections(user=Depends(get_current_user), db: Session = Depends(get_db)):
 
-    liked = db.query(UserLikedMovie).filter(UserLikedMovie.user_id == user.id).all()
-    watchlist = db.query(UserWatchList).filter(UserWatchList.user_id == user.id).all()
+    # Beğenilenler
+    liked_items = db.query(UserLikedMovie).filter(UserLikedMovie.user_id == user.id).all()
+    liked_movies = []
+    for item in liked_items:
+        movie = db.query(Movie).filter(Movie.id == item.movie_id).first()
+        if movie:
+            liked_movies.append(convert(movie))
+
+    # İzleme Listesi
+    watchlist_items = db.query(UserWatchList).filter(UserWatchList.user_id == user.id).all()
+    watchlist_movies = []
+    for item in watchlist_items:
+        movie = db.query(Movie).filter(Movie.id == item.movie_id).first()
+        if movie:
+            watchlist_movies.append(convert(movie))
+
+    # İzlenenler (Watched)
+    watched_items = db.query(Watched).filter(Watched.user_id == user.id).order_by(Watched.created_at.desc()).all()
+    watched_movies = []
+    for item in watched_items:
+        if item.movie:
+            watched_movies.append(convert(item.movie))
 
     return {
-        "liked": [l.movie_id for l in liked],
-        "watchlist": [w.movie_id for w in watchlist],
+        "liked": liked_movies,
+        "watchlist": watchlist_movies,
+        "watched": watched_movies
     }

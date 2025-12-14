@@ -19,10 +19,10 @@ def add_review(movie_id: int, text: str,
                db: Session = Depends(get_db),
                current_user: User = Depends(get_current_user)):
 
-    if not is_clean_text(text):
+    if not is_clean(text):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Yorum küfür/argo içeriyor. Lütfen daha uygun bir dil kullanın."
+            detail="Yorumunuz argo veya uygunsuz içerik barındırıyor."
         )
 
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
@@ -37,3 +37,22 @@ def add_review(movie_id: int, text: str,
     return {"message": "Yorum eklendi", "review": review}
 
 
+@router.get("/{movie_id}")
+def get_movie_reviews(movie_id: int, db: Session = Depends(get_db)):
+    reviews = db.query(Review).filter(
+        Review.movie_id == movie_id
+    ).order_by(Review.created_at.desc()).all()
+    
+    # Return with User info
+    results = []
+    for r in reviews:
+        user = db.query(User).filter(User.id == r.user_id).first()
+        results.append({
+            "id": r.id,
+            "text": r.text,
+            "created_at": r.created_at, # datetime objesi, JSON response'da oto string olur
+            "user": {
+                "username": user.username if user else "Anonim"
+            }
+        })
+    return results

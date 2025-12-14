@@ -22,13 +22,33 @@ def convert(movie: Movie, tmdb_extra=None):
     if tmdb_extra and tmdb_extra.get("director"):
         directors = [{"name": tmdb_extra["director"]}]
     else:
-        directors = [{"name": "Bilinmiyor"}]
+        # Fallback to DB
+        try:
+            directors = json.loads(movie.directors) if movie.directors else [{"name": "Bilinmiyor"}]
+        except:
+            directors = [{"name": "Bilinmiyor"}]
 
     # CAST
-    cast = tmdb_extra["cast"] if tmdb_extra and tmdb_extra.get("cast") else []
+    if tmdb_extra and tmdb_extra.get("cast"):
+        cast = tmdb_extra["cast"]
+    else:
+        # Fallback to DB
+        try:
+            cast = json.loads(movie.cast) if movie.cast else []
+        except:
+            cast = []
 
     # GENRES
-    genres = json.loads(movie.genres) if movie.genres else []
+    try:
+        raw_genres = json.loads(movie.genres) if movie.genres else []
+    except:
+        raw_genres = []
+
+    # FIX: Eğer liste stringlerden oluşuyorsa (Manuel eklenenler: ["Komedi"]) -> Dict listesine çevir
+    if raw_genres and isinstance(raw_genres, list) and len(raw_genres) > 0 and isinstance(raw_genres[0], str):
+        genres = [{"id": 0, "name": g} for g in raw_genres]
+    else:
+        genres = raw_genres
 
     return MovieOut(
         id=movie.id,
@@ -52,6 +72,8 @@ def convert(movie: Movie, tmdb_extra=None):
 
         poster_path=movie.poster_path,
         poster_url=movie.poster_url,
+        trailer_url=getattr(movie, "trailer_url", None), # Map new field
+        backdrop_path=getattr(movie, "backdrop_path", None), # Add backdrop support if model has it, or handle cleanly
 
         release_date=(
             tmdb_extra.get("release_date")
@@ -128,7 +150,14 @@ def upcoming():
 # -----------------------------
 @router.get("/search/{query}", response_model=list[MovieOut])
 def search(query: str, db: Session = Depends(get_db)):
-    movies = db.query(Movie).filter(Movie.title.ilike(f"%{query}%")).all()
+    from sqlalchemy import or_
+    movies = db.query(Movie).filter(
+        or_(
+            Movie.title.ilike(f"%{query}%"),
+            Movie.cast.ilike(f"%{query}%"),
+            Movie.directors.ilike(f"%{query}%")
+        )
+    ).all()
     return [convert(m) for m in movies]
 
 
@@ -186,20 +215,24 @@ def similar_movies(movie_id: int, db: Session = Depends(get_db)):
     if not movie:
         raise HTTPException(404, "Movie not found")
 
-    # Türler yoksa benzerlik yapamayız → boş liste
-    if not movie.genres:
-        return []
-
-    genres = json.loads(movie.genres)
-
-    # Aynı türlerden en popüler 6 filmi çek
-    movies = (
-        db.query(Movie)
-        .filter(Movie.id != movie_id)
-        .filter(Movie.genres.like(f"%{genres[0]}%"))
-        .order_by(Movie.popularity.desc())
-        .limit(6)
-        .all()
-    )
-
-    return [convert(m) for m in movies]
+    # KULLANILAN MANTIK: Gelişmiş İçerik Tabanlı Öneri (TF-IDF + Cast + Director + Genre)
+    from app.recommender.content import recommend_by_content
+    
+    # Tüm filmleri (veya geniş bir havuzu) çekelim
+    # Gerçek canlıda her requestte 1500 film çekmek yavaş olabilir ama 1500 film için sorun değil.
+    # Optimizasyon için: Cache mekanizması eklenebilir.
+    
+    all_movies_pool = db.query(Movie).all()
+    
+    recommendations = recommend_by_content(all_movies_pool, seed_movie=movie, top_n=6)
+    
+    # Model dönüşümü
+    results = []
+    for r in recommendations:
+        # movie ID'sinden DB objesini bul (veya recommendations zaten data içeriyor)
+        # recommend_by_content dict dönüyor, biz DB object arıyoruz convert için
+        m_obj = next((m for m in all_movies_pool if m.id == r['id']), None)
+        if m_obj:
+            results.append(convert(m_obj))
+            
+    return results

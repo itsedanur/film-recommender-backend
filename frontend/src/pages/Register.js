@@ -15,7 +15,7 @@ function Register() {
 
   async function handleRegister(e) {
     e.preventDefault();
-    setMessage("Registering...");
+    setMessage("Kayıt olunuyor...");
 
     try {
       const data = await apiFetch("/auth/register", {
@@ -28,25 +28,25 @@ function Register() {
       });
 
       // Kayıt başarılı
-      setMessage("Registration successful! Redirecting to login...");
-      // Genellikle token alınır ve login sayfasına yönlendirilir.
-      setTimeout(() => navigate("/login"), 800);
+      setMessage("✅ Kayıt başarılı! Hesap doğrulama linki e-posta adresinize gönderildi (Simülasyon). Şimdi giriş yapabilirsiniz.");
+      // Otomatik yönlendirme
+      setTimeout(() => navigate("/login"), 2000);
 
     } catch (err) {
       console.log("REGISTER ERROR:", err);
 
       if (err.status === 422) {
-        // Doğrulama hatası (Validation Error) - Fast API'de genellikle parola/format hatası
-        setMessage("Input validation failed. Check password length (min 6 chars) and ensure email is valid.");
+        // Doğrulama hatası
+        setMessage("❌ Şifre en az 6 karakter olmalı ve geçerli bir e-posta girmelisiniz.");
       } else if (err.status === 400) {
-        // Eğer backend 400 hatasını sadece e-posta çakışması için kullanıyorsa:
-        setMessage("This email is already registered.");
+        // Hata mesajını backend'den al
+        setMessage(`❌ ${err.detail || "Bu e-posta veya kullanıcı adı zaten kullanılıyor."}`);
       } else if (err.status === 0) {
         // Bağlantı hatası
-        setMessage("Connection failed. The backend server might be offline.");
+        setMessage("❌ Sunucuya bağlanılamadı.");
       } else {
         // Diğer beklenmeyen hatalar
-        setMessage(`Registration failed: ${err.detail || "An unexpected error occurred."}`);
+        setMessage(`❌ Kayıt başarısız: ${err.detail || "Beklenmedik bir hata oluştu."}`);
       }
     }
   }
@@ -54,12 +54,12 @@ function Register() {
   return (
     <div className="auth-background">
       <div className="auth-card">
-        <h1 className="auth-title">Sign Up</h1>
+        <h1 className="auth-title">Kayıt Ol</h1>
 
         <form onSubmit={handleRegister}>
           <input
             className="auth-input"
-            placeholder="Username"
+            placeholder="Kullanıcı Adı"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -68,7 +68,7 @@ function Register() {
           <input
             type="email"
             className="auth-input"
-            placeholder="Email address"
+            placeholder="E-posta Adresi"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -77,20 +77,20 @@ function Register() {
           <input
             type="password"
             className="auth-input"
-            placeholder="Password (min 6 chars)"
+            placeholder="Şifre (en az 6 karakter)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
 
-          <button type="submit" className="auth-button">Sign Up</button>
+          <button type="submit" className="auth-button">Kayıt Ol</button>
         </form>
 
-        {message && <p className={`auth-message ${message.includes("successful") ? 'success' : 'error'}`}>{message}</p>}
+        {message && <p className={`auth-message ${message.includes("başarılı") ? 'success' : 'error'}`}>{message}</p>}
 
         <p className="auth-switch">
-          Already have an account?{" "}
-          <span onClick={() => navigate("/login")}>Sign in now.</span>
+          Zaten hesabın var mı?{" "}
+          <span onClick={() => navigate("/login")}>Giriş yap.</span>
         </p>
       </div>
     </div>

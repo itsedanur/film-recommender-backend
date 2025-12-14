@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
-
+import json
 
 def recommend_by_content(movies, seed_movie=None, top_n=20):
     """
@@ -14,31 +14,63 @@ def recommend_by_content(movies, seed_movie=None, top_n=20):
         return []
 
     # ----------------------------------------
-    # 1) Metin birleşimi (title + overview)
+    # 1) Metin birleşimi (title + overview + GENRES + DIRECTORS + CAST)
     # ----------------------------------------
     corpus = []
+    
     for m in movies:
-        text = f"{m.title} {m.overview or ''}"
+        # Genre'leri ağırlıklı ekle (5x)
+        genre_str = ""
+        try:
+            if m.genres:
+                g_list = json.loads(m.genres) if isinstance(m.genres, str) else m.genres
+                if isinstance(g_list, list):
+                    genre_str = " ".join([g.get('name', '') if isinstance(g, dict) else str(g) for g in g_list] * 5)
+        except:
+            pass
+
+        # Director (3x)
+        director_str = ""
+        try:
+            if m.directors:
+                d_list = json.loads(m.directors) if isinstance(m.directors, str) else m.directors
+                if isinstance(d_list, list):
+                    director_str = " ".join([d.get('name', '').replace(" ", "") for d in d_list] * 3)
+        except:
+            pass
+
+        # Cast (Top 3 actors, 2x)
+        cast_str = ""
+        try:
+            if m.cast:
+                c_list = json.loads(m.cast) if isinstance(m.cast, str) else m.cast
+                if isinstance(c_list, list):
+                    # Space removal is good for distinct actor names "TomCruise" vs "TomHanks"
+                    cast_str = " ".join([c.get('name', '').replace(" ", "") for c in c_list[:3]] * 2)
+        except:
+            pass
+            
+        text = f"{m.title} {m.overview or ''} {genre_str} {director_str} {cast_str}"
         corpus.append(text)
 
     # ----------------------------------------
     # 2) TF-IDF modeli
     # ----------------------------------------
     tfidf = TfidfVectorizer(stop_words="english")
-    matrix = tfidf.fit_transform(corpus)
+    try:
+        matrix = tfidf.fit_transform(corpus)
+    except ValueError:
+        return []
 
     # ----------------------------------------
     # 3) Anchor (kıyaslama yapılacak film)
     # ----------------------------------------
     if seed_movie:
-        # Belirli filme göre öneri
         try:
             anchor_index = movies.index(seed_movie)
         except ValueError:
-            # Olmazsa popüler filmi fallback seç
             anchor_index = np.argmax([m.popularity for m in movies])
     else:
-        # Varsayılan: en popüler film
         anchor_index = np.argmax([m.popularity for m in movies])
 
     # ----------------------------------------

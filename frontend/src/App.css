@@ -1,31 +1,27 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden !important;
-  background: #000;
+/* App.css - Layout Specifics */
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-
-
-
-
-body {
-  background: #000;
-  color: #fff;
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  padding: 0;
+.main-content {
+  flex: 1;
+  padding-top: 80px;
+  /* Navbar height compensation */
+  /* Fade in animation for pages */
+  animation: fadeIn 0.5s ease-out;
 }
 
-a {
-  color: #fff;
-  text-decoration: none;
-}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 
-a:hover {
-  color: #e50914;
-}
-
-button {
-  cursor: pointer;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

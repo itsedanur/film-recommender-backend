@@ -1,130 +1,513 @@
-.detail-page {
+/* Container */
+.movie-detail-container {
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  padding-bottom: 50px;
+}
+
+/* Loading */
+.loading-screen {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #e50914;
+}
+
+/* Hero / Backdrop */
+.backdrop-hero {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  /* large cinematic hero */
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+.backdrop-overlay {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.8) 60%,
+      #000 100%);
+  display: flex;
+  align-items: flex-end;
+  /* Align content to bottom */
+  padding-bottom: 40px;
+}
+
+.hero-content-grid {
   display: flex;
   gap: 40px;
-  padding: 40px;
-  background: #000;
-  color: #fff;
-  min-height: 100vh;
+  max-width: 1200px;
+  width: 90%;
+  margin: 0 auto;
+  align-items: flex-end;
 }
 
-.left { width: 320px; }
+/* Poster */
+.poster-wrapper {
+  flex-shrink: 0;
+  width: 300px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
 
-.detail-poster {
+.main-poster {
   width: 100%;
-  border-radius: 14px;
-  box-shadow: 0 0 30px #e50914aa;
+  border-radius: 8px;
+  display: block;
 }
 
-.detail-buttons {
+/* Info Section */
+.movie-info {
+  flex-grow: 1;
+  padding-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.detail-movie-title {
+  font-size: 4rem !important;
+  /* Adjusted to be large but not huge */
+  /* Even Larger title */
+  font-weight: 800;
+  margin-bottom: 10px;
+  line-height: 1.1;
+  text-align: left;
+  /* Ensure left alignment */
+  margin-left: -2px;
+  /* Slight visual optical alignment */
+}
+
+.meta-row {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
+  align-items: center;
+  gap: 15px;
+  font-size: 1.1rem;
+  color: #ddd;
+  margin-bottom: 20px;
 }
 
-.btn.red {
-  background: #e50914;
-  border: none;
-  padding: 12px;
+.dot {
+  color: #e50914;
+  font-weight: bold;
+}
+
+.imdb-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 215, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
+.imdb-star {
+  color: #ffd700;
+}
+
+.imdb-score {
   color: #fff;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s;
+  font-weight: bold;
 }
 
-.btn.red:hover { background: #ff2a2a; }
+.imdb-label {
+  font-size: 0.8rem;
+  color: #ccc;
+}
 
-.btn.red.small { padding: 8px; font-size: 14px; }
+.director-row {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
 
-.right { flex: 1; }
+.director-label {
+  color: #e50914;
+  margin-right: 8px;
+  font-weight: bold;
+}
 
-.title { font-size: 32px; font-weight: 700; }
+.director-name {
+  color: #fff;
+  font-weight: 500;
+}
 
-.stats { color: #bbb; margin-bottom: 20px; }
-
-.overview {
-  line-height: 1.5;
+.genres-list {
+  display: flex;
+  gap: 10px;
   margin-bottom: 25px;
-  font-size: 15px;
 }
 
-/* Oyuncular */
-.cast-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 150px);
-  gap: 18px;
+.genre-pill {
+  border: 1px solid #aaa;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
 }
 
-.cast-card {
-  background: #111;
+.tagline {
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-bottom: 20px;
+  border-left: 3px solid #e50914;
+  padding-left: 15px;
+}
+
+.overview-text {
+  max-width: 800px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #eee;
+  margin-bottom: 30px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-action {
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.btn-action.primary {
+  background-color: #e50914;
+  color: white;
+}
+
+.btn-action.primary:hover {
+  background-color: #ff0a16;
+  transform: scale(1.05);
+}
+
+.btn-action.secondary {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(5px);
+}
+
+.btn-action.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Collection Popover */
+.collection-popover {
+  position: absolute;
+  bottom: 120%;
+  left: 0;
+  width: 200px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 6px;
   padding: 10px;
-  border-radius: 10px;
+  z-index: 100;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.popover-item {
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #ddd;
+}
+
+.popover-item:hover {
+  background: #333;
+  color: #fff;
+}
+
+/* Sections General */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 90%;
+}
+
+.content-section {
+  padding: 40px 0;
+  border-top: 1px solid #333;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 25px;
+  border-left: 5px solid #e50914;
+  padding-left: 15px;
+}
+
+/* Cast */
+.cast-scroller {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 15px;
+}
+
+.cast-card-mini {
+  width: 140px;
+  flex-shrink: 0;
   text-align: center;
-  transition: 0.2s;
 }
 
-.cast-card:hover {
-  box-shadow: 0 0 15px #e50914;
-}
-
-.cast-card img {
+.cast-card-mini img {
   width: 100%;
-  height: 180px;
-  object-fit: cover;
+  height: 175px;
+  /* Fixed height for consistency */
   border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 10px;
+  transition: transform 0.2s;
 }
 
-.actor-name { margin-top: 8px; font-size: 15px; font-weight: 600; }
-.actor-role { font-size: 13px; opacity: 0.7; }
+.cast-card-mini img:hover {
+  transform: scale(1.05);
+}
 
-/* Benzer Filmler */
-.similar-grid {
+.actor {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.role {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+/* Similar Movies */
+.similar-movie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 150px);
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
 }
 
 .similar-card {
-  background: #111;
-  padding: 8px;
-  border-radius: 10px;
+  position: relative;
   cursor: pointer;
-  text-align: center;
-  transition: 0.2s;
+  transition: transform 0.2s;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .similar-card:hover {
-  box-shadow: 0 0 18px #e50914;
-  transform: translateY(-3px);
+  transform: scale(1.05);
+  z-index: 2;
 }
 
 .similar-card img {
   width: 100%;
-  height: 200px;
-  border-radius: 8px;
-  object-fit: cover;
+  height: auto;
+  display: block;
 }
 
-.similar-card p { margin-top: 8px; font-size: 14px; }
-
-/* Yorum Kutusu */
-.comment-box {
-  margin-top: 10px;
-  background: #111;
-  padding: 15px;
-  border-radius: 10px;
-}
-
-.comment-box textarea {
+.similar-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  height: 90px;
-  resize: none;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.similar-card:hover .similar-overlay {
+  opacity: 1;
+}
+
+/* REVIEWS SECTION (New) */
+.reviews-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Scrollbar for reviews */
+.reviews-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.reviews-list::-webkit-scrollbar-track {
+  background: #222;
+}
+
+.review-card {
+  background: #181818;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 3px solid #e50914;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #aaa;
+  border-bottom: 1px solid #333;
+  padding-bottom: 8px;
+}
+
+.review-user {
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.review-text {
+  color: #e0e0e0;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  /* keep newlines */
+}
+
+.comment-input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #141414;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #333;
+}
+
+.comment-input-area textarea {
   background: #222;
   color: white;
   border: 1px solid #444;
+  padding: 15px;
   border-radius: 8px;
-  padding: 10px;
-  font-size: 14px;
+  height: 120px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.comment-input-area textarea:focus {
+  outline: none;
+  border-color: #e50914;
+}
+
+.btn-send {
+  align-self: flex-end;
+  padding: 12px 30px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.btn-send:hover {
+  background: #ff2020;
+}
+
+/* Trailer Modal */
+.trailer-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trailer-modal-content {
+  width: 80%;
+  height: 80%;
+  position: relative;
+  background: #000;
+}
+
+.close-modal {
+  position: absolute;
+  top: -40px;
+  right: -10px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-content-grid {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .poster-wrapper {
+    width: 200px;
+    margin-bottom: 20px;
+  }
+
+  .detail-movie-title {
+    font-size: 3rem !important;
+  }
+
+  .meta-row {
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  .genres-list {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .overview-text {
+    display: none;
+    /* Hide long text on mobile */
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
 }

@@ -55,3 +55,25 @@ def my_likes(
     )
     return {"movie_ids": [l.movie_id for l in likes]}
 
+# Used by Watchlist page to display cards
+from app.routers.movies import convert
+
+@router.get("/me/details")
+def my_likes_details(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    likes = (
+        db.query(Like)
+        .filter(Like.user_id == current_user.id)
+        .all()
+    )
+    # Fetch full movies
+    movies = []
+    for l in likes:
+        m = db.query(Movie).filter(Movie.id == l.movie_id).first()
+        if m:
+            movies.append(convert(m))
+    
+    return movies
+

@@ -17,6 +17,7 @@ class Movie(Base):
     # Poster info
     poster_path = Column(String)
     poster_url = Column(String)
+    trailer_url = Column(String) # 🔥 NEW FIELD
 
     release_date = Column(String)
 

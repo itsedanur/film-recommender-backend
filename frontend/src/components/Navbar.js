@@ -23,7 +23,7 @@ export default function Navbar() {
         <Link to="/movies">Filmler</Link>
         <Link to="/trending">Trendler</Link>
         <Link to="/upcoming">Yakında</Link>
-        <Link to="/watchlist">Listem</Link>
+        <Link to="/watchlist">İzlediklerim</Link> {/* Renamed from Listem */}
         <Link to="/about">Hakkımızda</Link>
         <Link to="/contact">İletişim</Link>
       </div>
@@ -36,11 +36,21 @@ export default function Navbar() {
             <Link to="/register" className="btn-register">Kayıt Ol</Link>
           </>
         ) : (
-          <div className="user-box">
-            <span className="hello">Merhaba,</span>
-            <span className="username">{user.username}</span>
+          <div className="user-box" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {user.is_admin === 1 && (
+              <Link to="/admin" className="btn-admin-panel" style={{ color: '#e50914', border: '1px solid #e50914', padding: '5px 10px', borderRadius: '4px', textDecoration: 'none', marginRight: 0 }}>Admin</Link>
+            )}
 
-            <button className="btn-logout" onClick={logout}>Çıkış</button>
+            <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'white' }}>
+              <img
+                src={user.avatar_url || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
+                alt="Avatar"
+                style={{ width: 35, height: 35, borderRadius: "50%", objectFit: "cover", border: "2px solid #e50914" }}
+              />
+              <span className="username" style={{ fontWeight: 'bold' }}>{user.name || user.username}</span>
+            </Link>
+
+            <button className="btn-logout" onClick={logout} style={{ marginLeft: 10 }}>Çıkış</button>
           </div>
         )}
       </div>

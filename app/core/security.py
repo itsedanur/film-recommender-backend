@@ -61,3 +61,31 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token expired or invalid"
         )
+
+# ----------------------------------------
+# OPTIONAL AUTH (Chatbot vb için)
+# ----------------------------------------
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+def get_current_user_optional(
+    token: str = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db)
+):
+    """
+    Login zorunluluğu olmayan ama loginse user'ı döndüren fonksiyon.
+    Token yoksa None döner.
+    """
+    if not token:
+        return None
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("user_id")
+        if user_id is None:
+            return None
+            
+        user = db.query(User).filter(User.id == user_id).first()
+        return user
+        
+    except JWTError:
+        return None

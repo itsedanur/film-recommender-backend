@@ -1,18 +1,18 @@
-import re
+from better_profanity import profanity
 
-BAD_WORDS = [
-    "amk", "aq", "mk", "orospu", "sikti", "sikerim", "yarrak",
-    "ananı", "sikiş", "fuck", "shit", "bitch" "bok"
+
+profanity.load_censor_words()
+
+
+custom_bad_words = [
+    "aptal", "salak", "gerizekalı", "mal", "bok","öküz", "yavşak", "piç", "amk", "aq", "sik", "siktir"
 ]
+profanity.add_censor_words(custom_bad_words)
 
 def is_clean(text: str) -> bool:
-    if not text:
-        return False
+    
+    return not profanity.contains_profanity(text)
 
-    lowered = text.lower()
-
-    for word in BAD_WORDS:
-        if word in lowered:
-            return False
-
-    return True
+def clean_text(text: str) -> str:
+    
+    return profanity.censor(text)

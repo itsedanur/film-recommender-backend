@@ -62,6 +62,7 @@ function MovieList({ type = "all" }) {
             id={movie.id}
             title={movie.title}
             poster_path={movie.poster_path}
+            poster_url={movie.poster_url}
             vote_average={movie.vote_average}
             type={type}   // ✔ BURASI ÇOK ÖNEMLİ
           />

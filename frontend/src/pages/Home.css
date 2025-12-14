@@ -1,135 +1,198 @@
-/* ---------------------------------------------------
-   GENEL ARKA PLAN
------------------------------------------------------ */
+/* Home.css - Cinematic Professional Design */
+
 .home-container {
-  background: #000;
-  color: #fff;
+  background-color: #0a0a0a;
   min-height: 100vh;
-  padding-bottom: 60px;
+  color: white;
+  padding-bottom: 80px;
+  font-family: 'Inter', sans-serif;
 }
 
-
-/* ---------------------------------------------------
-   HERO ALANI – ORTALANMIŞ SÜPER TASARIM
------------------------------------------------------ */
-.hero-box {
+/* --- HERO SECTION --- */
+.hero-section {
+  position: relative;
   width: 100%;
-  padding: 90px 20px;
+  height: 85vh;
+  /* Massive cinematic intro */
+  background-size: cover;
+  background-position: center top;
+  margin-bottom: -100px;
+  /* Overlap search bar */
   display: flex;
-  justify-content: center;
-  background: linear-gradient(180deg, #0a0a0a, #000);
-  text-align: center;
+  align-items: center;
+  transition: background-image 0.5s ease-in-out;
 }
 
 .hero-overlay {
-  max-width: 820px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, #0a0a0a 10%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.6) 100%);
+  display: flex;
+  align-items: center;
+}
+
+.hero-content {
+  max-width: 800px;
+  padding-left: 5%;
+  z-index: 2;
+  margin-top: 50px;
 }
 
 .hero-title {
-  font-size: 64px;
-  font-weight: 900;
-  color: #ff2a2a;
-  text-shadow: 0 0 25px #ff2a2a80;
-  margin-bottom: 18px;
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  line-height: 1.1;
 }
 
-.hero-sub {
-  font-size: 20px;
+.hero-overview {
+  font-size: 1.2rem;
+  color: #ddd;
+  margin-bottom: 30px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+  max-width: 600px;
   line-height: 1.6;
-  color: #ddd;
-  opacity: 0.9;
-  margin-bottom: 35px;
 }
 
-
-/* ---------------------------------------------------
-   SEARCH BOX – PREMIUM TASARIM
------------------------------------------------------ */
-.search-box {
+.hero-buttons {
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  gap: 15px;
 }
 
-.search-box input {
-  width: 360px;
-  padding: 12px 15px;
-  font-size: 16px;
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 8px;
-  color: #fff;
-  outline: none;
-  transition: 0.25s;
-}
-
-.search-box input:focus {
-  border-color: #ff2a2a;
-  box-shadow: 0 0 12px #ff2a2a60;
-}
-
-.search-box button {
-  padding: 12px 18px;
-  background: #ff2a2a;
+.btn-hero {
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #fff;
-  font-size: 16px;
+  font-size: 1.1rem;
   font-weight: 600;
-  transition: 0.3s;
-}
-
-.search-box button:hover {
-  background: #ff3b3b;
-  box-shadow: 0 0 12px #ff2a2a80;
-}
-
-
-/* ---------------------------------------------------
-   KATEGORİ SATIRI – ortalı & şık
------------------------------------------------------ */
-.category-row {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.cat-btn {
-  background: #111;
-  color: #ddd;
-  border: 1px solid #333;
-  padding: 8px 18px;
-  border-radius: 6px;
+  padding: 12px 35px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: 0.25s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
 }
 
-.cat-btn:hover {
-  border-color: #ff2a2a;
-  color: #ff2a2a;
+.btn-hero.primary {
+  background-color: white;
+  color: black;
 }
 
+.btn-hero.primary:hover {
+  background-color: rgba(255, 255, 255, 0.75);
+}
 
-/* ---------------------------------------------------
-   FİLM GRIDİ
------------------------------------------------------ */
-.movie-grid {
-  width: 100%;
-  max-width: 1300px;
-  margin: 30px auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 25px;
-  padding: 0 20px;
+.btn-hero.secondary {
+  background-color: rgba(109, 109, 110, 0.7);
+  color: white;
+  backdrop-filter: blur(4px);
 }
-.home-container {
-  max-width: 100%;
-  overflow-x: hidden;
+
+.btn-hero.secondary:hover {
+  background-color: rgba(109, 109, 110, 0.4);
 }
-.hero-box {
-  width: 100%;
-  margin: 0 auto;
+
+/* Fallback hero styling */
+.fallback-hero {
+  background: #111;
+  justify-content: center;
+  align-items: center;
+}
+
+.fallback-hero .hero-content {
+  text-align: center;
+  padding: 0;
+}
+
+/* --- SEARCH & FILTERS --- */
+.search-filter-container {
+  position: relative;
+  z-index: 10;
+  background: rgba(20, 20, 20, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.search-box-home {
+  display: flex;
+  background: #333;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid #444;
+}
+
+.search-box-home input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 15px 20px;
+  font-size: 1.1rem;
+}
+
+.search-box-home input:focus {
+  outline: none;
+  background: #3a3a3a;
+}
+
+.search-btn {
+  background: #e50914;
+  color: white;
+  border: none;
+  padding: 0 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-btn:hover {
+  background: #ff0f1f;
+}
+
+/* Pills */
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.pill {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ddd;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.pill:hover {
+  background: white;
+  color: black;
+}
+
+.pill.active {
+  background: white;
+  color: black;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.section-title {
+  margin-top: 20px;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  color: #fff;
+  border-left: 4px solid #e50914;
+  padding-left: 15px;
 }

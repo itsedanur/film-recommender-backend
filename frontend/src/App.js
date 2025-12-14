@@ -14,7 +14,11 @@ import MovieList from "./pages/MovieList";
 import MovieDetail from "./pages/MovieDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 import Profile from "./pages/Profile";
+import WatchList from "./pages/watchlist";
+import AdminRoute from "./components/AdminRoute"; // Added this import
+import Chatbot from "./components/Chatbot";
 
 function App() {
   return (
@@ -42,7 +46,19 @@ function App() {
         />
 
         {/* Watchlist / Profil */}
-        <Route path="/watchlist" element={<Profile />} />
+        <Route path="/watchlist" element={<WatchList />} />
+
+        {/* Admin Protected Route */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+
+        <Route path="/profile" element={<Profile />} />
 
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
@@ -50,7 +66,9 @@ function App() {
         {/* Auth */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
       </Routes>
+      <Chatbot />
     </>
   );
 }

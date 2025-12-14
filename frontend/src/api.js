@@ -38,17 +38,17 @@ export async function apiFetch(path, { method = "GET", body = null } = {}) {
     data = text ? JSON.parse(text) : null;
   } catch {
     // JSON değilse veya boşsa, metin olarak kalabilir.
-    data = text; 
+    data = text;
   }
 
   if (!res.ok) {
     // Backend'den 4xx veya 5xx hata kodu gelirse
     let detailMessage = "API hatası";
     if (typeof data === 'object' && data?.detail) {
-        detailMessage = data.detail;
+      detailMessage = data.detail;
     } else if (typeof data === 'string' && data) {
-        // Hata gövdesi bir string ise
-        detailMessage = data;
+      // Hata gövdesi bir string ise
+      detailMessage = data;
     }
 
     throw {
@@ -58,4 +58,17 @@ export async function apiFetch(path, { method = "GET", body = null } = {}) {
   }
 
   return data;
+}
+
+// CAPTCHA Al
+export async function getCaptcha() {
+  return apiFetch("/contact/captcha");
+}
+
+// Mesaj Gönder
+export async function sendContactMessage(formData) {
+  return apiFetch("/contact/send", {
+    method: "POST",
+    body: formData,
+  });
 }

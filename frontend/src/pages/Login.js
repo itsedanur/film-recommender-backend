@@ -30,25 +30,26 @@ function Login() {
 
       login(me, data.access_token);
 
-      setMessage("Login successful!");
+      setMessage("Giriş başarılı! Yönlendiriliyorsunuz...");
       setTimeout(() => navigate("/"), 800);
 
     } catch (err) {
       console.log("LOGIN ERROR:", err);
-      setMessage(err.detail || "Login failed.");
+      // Hata mesajını zaten backend'de Türkçe yaptık ama garanti olsun.
+      setMessage(err.detail || "Giriş başarısız.");
     }
   }
 
   return (
     <div className="auth-background">
       <div className="auth-card">
-        <h1 className="auth-title">Sign In</h1>
+        <h1 className="auth-title">Giriş Yap</h1>
 
         <form onSubmit={handleLogin}>
           <input
             type="email"
             className="auth-input"
-            placeholder="Email"
+            placeholder="E-posta"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -56,19 +57,19 @@ function Login() {
           <input
             type="password"
             className="auth-input"
-            placeholder="Password"
+            placeholder="Şifre"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <button className="auth-button">Sign In</button>
+          <button className="auth-button">Giriş Yap</button>
         </form>
 
         {message && <p className="auth-message">{message}</p>}
 
         <p className="auth-switch">
-          New to FilmRec?
-          <span onClick={() => navigate("/register")}> Sign up now.</span>
+          FilmRec'te yeni misin?
+          <span onClick={() => navigate("/register")}> Hemen kayıt ol.</span>
         </p>
       </div>
     </div>

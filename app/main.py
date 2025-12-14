@@ -16,8 +16,10 @@ from app.db import Base, engine, SessionLocal
 from app.utils.init_data import import_local_movies, update_movie_posters
 from app.services.tmdb_import import add_movies_to_db
 from app.routers import (
-    auth, users, movies, ratings, reviews, lists, admin, recommend, likes
+    auth, users, movies, ratings, reviews, lists, admin, recommend, likes, collections, chatbot, contact, watched, user_actions
 )
+
+
 
 app = FastAPI(title="Film Recommender API", version="1.0.0")
 
@@ -87,6 +89,11 @@ app.include_router(lists.router)
 app.include_router(likes.router)
 app.include_router(admin.router)
 app.include_router(recommend.router)
+app.include_router(collections.router)
+app.include_router(chatbot.router)
+app.include_router(contact.router)
+app.include_router(watched.router)
+app.include_router(user_actions.router)
 
 @app.get("/")
 def home():

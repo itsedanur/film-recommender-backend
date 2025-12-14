@@ -16,9 +16,7 @@ HEADERS_V4 = {
 }
 
 
-# ---------------------------
-# ⭐ TR FULL MOVIE DETAILS
-# ---------------------------
+
 def fetch_movie_full(tmdb_id):
     """Filmin Türkçe overview + genre + poster + title bilgilerini çeker"""
     url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
@@ -68,9 +66,7 @@ def fetch_popular_movies():
         return []
 
 
-# ---------------------------
-# ⭐ Upcoming Filmler (TR)
-# ---------------------------
+
 def fetch_upcoming_movies():
     if not TMDB_V4_TOKEN:
         print("❌ TMDB_V4_TOKEN yok!")
@@ -79,15 +75,29 @@ def fetch_upcoming_movies():
     url = "https://api.themoviedb.org/3/movie/upcoming"
 
     params = {
+        "api_key": TMDB_API_KEY,  # 🔥 API Key desteği eklendi
         "language": "tr-TR",
         "region": "TR",
         "page": 1
     }
 
     try:
-        resp = requests.get(url, params=params, headers=HEADERS_V4)
+        #  (çakışmayı önlemek için)
+        resp = requests.get(url, params=params)
         resp.raise_for_status()
-        return resp.json().get("results", [])
+        results = resp.json().get("results", [])
+
+        # 🔥 Sadece gelecekteki filmleri filtrele
+        from datetime import date
+        today = date.today().isoformat()
+
+        future_movies = [
+            m for m in results 
+            if m.get("release_date") and m.get("release_date") > today
+        ]
+
+        return future_movies
+
     except Exception as e:
         print(f"❌ Upcoming API hatası: {e}")
         return []

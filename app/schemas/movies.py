@@ -10,6 +10,8 @@ class MovieBase(BaseModel):
 
     poster_path: Optional[str] = None
     poster_url: Optional[str] = None
+    trailer_url: Optional[str] = None
+    backdrop_path: Optional[str] = None
     release_date: Optional[str] = None
 
     vote_average: Optional[float] = None

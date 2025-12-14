@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
@@ -7,7 +8,7 @@ from jose import jwt, JWTError
 from app.db import SessionLocal
 from app.models.users import User
 
-SECRET_KEY = "supersecrectkey"
+SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
