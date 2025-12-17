@@ -10,9 +10,7 @@ from app.schemas.movies import MovieOut
 
 router = APIRouter(prefix="/collections", tags=["Collections"])
 
-# --------------------------
-# SCHEMAS (Inline)
-# --------------------------
+
 class CollectionCreate(BaseModel):
     name: str
 
@@ -22,16 +20,10 @@ class CollectionOut(BaseModel):
     item_count: int
     movies: list[MovieOut]  # preview or full list
 
-# --------------------------
-# HELPER: Convert Movie
-# --------------------------
-# Bu fonksiyonu routers/movies.py'deki ile uyumlu tutmak lazım.
-# Şimdilik basic bir çevirici kullanacağız.
+
 from app.routers.movies import convert
 
-# --------------------------
-# 1. LIST COLLECTIONS
-# --------------------------
+
 @router.get("/", response_model=list[dict])
 def get_my_collections(
     db: Session = Depends(get_db),
@@ -47,10 +39,10 @@ def get_my_collections(
 
     result = []
     for c in collections:
-        # Convert items to MovieOut
+        
         movie_list = []
         for item in c.items:
-            # item.movie olabilir ama silinmiş movie kontrolü
+            
             if item.movie:
                 movie_list.append(convert(item.movie))
 
@@ -61,16 +53,14 @@ def get_my_collections(
         })
     return result
 
-# --------------------------
-# 2. CREATE COLLECTION
-# --------------------------
+
 @router.post("/")
 def create_collection(
     data: CollectionCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    # Aynı isimde liste var mı?
+    
     exists = (
         db.query(Collection)
         .filter(Collection.user_id == current_user.id, Collection.name == data.name)
@@ -86,9 +76,7 @@ def create_collection(
     
     return {"id": new_col.id, "name": new_col.name, "created": True}
 
-# --------------------------
-# 3. DELETE COLLECTION
-# --------------------------
+
 @router.delete("/{collection_id}")
 def delete_collection(
     collection_id: int,
@@ -107,9 +95,7 @@ def delete_collection(
     db.commit()
     return {"deleted": True}
 
-# --------------------------
-# 4. ADD MOVIE TO COLLECTION
-# --------------------------
+
 @router.post("/{collection_id}/add/{movie_id}")
 def add_movie_to_collection(
     collection_id: int,
@@ -117,7 +103,7 @@ def add_movie_to_collection(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    # 1. Koleksiyon senin mi?
+    
     col = (
         db.query(Collection)
         .filter(Collection.id == collection_id, Collection.user_id == current_user.id)
@@ -146,9 +132,7 @@ def add_movie_to_collection(
     db.commit()
     return {"added": True}
 
-# --------------------------
-# 5. REMOVE MOVIE FROM COLLECTION
-# --------------------------
+
 @router.delete("/{collection_id}/remove/{movie_id}")
 def remove_movie_from_collection(
     collection_id: int,

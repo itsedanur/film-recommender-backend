@@ -10,6 +10,8 @@ class ContactMessage(Base):
     name = Column(String, nullable=False)
     email = Column(String, nullable=False)
     message = Column(String, nullable=False)
+    reply = Column(String, nullable=True) # Admin's reply
+    replied_at = Column(DateTime(timezone=True), nullable=True) # Time of reply
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class CaptchaSession(Base):

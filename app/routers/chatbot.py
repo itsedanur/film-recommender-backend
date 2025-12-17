@@ -18,32 +18,65 @@ async def ask_chatbot(
 ):
     text = msg.get("message", "").lower().strip()
     
-    # 1. MODERATION
+    
     if not is_clean(text):
         return {
             "reply": "Lütfen saygılı bir dil kullanalım. Size nasıl yardımcı olabilirim?",
             "action": "none"
         }
 
-    # 2. GREETING
+    
     if text in ["merhaba", "selam", "hi", "hello", "naber"]:
         return {
             "reply": "Merhaba! Ben FilmRec asistanıyım. Sana film önerebilir, teknik destek verebilir veya hesabınla ilgili yardımcı olabilirim. Ne istersin?",
             "action": "none"
         }
 
-    # 3. PERSONAL RECOMMENDATION (Broadened)
-    # "bana öner", "film öner", "ne izlesem", "tavsiye"
+   
+    stopwords = ["filmleri", "filmi", "oynadığı", "yönettiği", "yönetmen", "kimdir", "öner", "bana", "hakkında", "izle"]
+    search_query = text
+    for word in stopwords:
+        search_query = search_query.replace(word, "").strip()
+
+   
+    if len(search_query) > 2:
+      
+        person_results = (db.query(Movie).filter(
+            or_(
+                Movie.cast.ilike(f"%{search_query}%"),
+                Movie.directors.ilike(f"%{search_query}%")
+            )
+        ).limit(5).all())
+
+        if person_results:
+            return {
+                "reply": f"{search_query.title()} ile ilgili şu filmleri buldum:",
+                "movies": [{"id": m.id, "title": m.title, "poster": m.poster_url or m.poster_path} for m in person_results]
+            }
+
+      
+        general_results = (db.query(Movie).filter(
+            or_(
+                Movie.title.ilike(f"%{search_query}%"),
+                Movie.cast.ilike(f"%{search_query}%"),
+                Movie.directors.ilike(f"%{search_query}%")
+            )
+        ).limit(3).all())
+        
+     
+        if general_results:
+             return {
+                "reply": f"'{search_query}' araması için şunları buldum:",
+                "movies": [{"id": m.id, "title": m.title, "poster": m.poster_url or m.poster_path} for m in general_results]
+            }
+
+
     recommendation_keywords = ["öner", "tavsiye", "ne izle", "zevkim", "benim için", "mood"]
     if any(k in text for k in recommendation_keywords):
-        # Specific check to ensure it's not a specific genre request like "komedi öner" (handled below)
-        # But actually, if "komedi" is present, we might want to prioritize genre search.
-        # Let's check genre keywords first in the flow or check logic here.
-        
-        # If text has a genre, let the genre block handle it (skip this block)
+       
         has_genre = any(g in text for g in ["aksiyon", "komedi", "dram", "bilim", "korku", "macera", "romantik", "animasyon", "suç"])
         if has_genre:
-            pass # Fall through to Genre Search
+            pass 
         else:
             if not current_user:
                 return {
@@ -53,7 +86,7 @@ async def ask_chatbot(
             
             recs = recommend_personal(db, current_user.id)
             if not recs:
-                # Fallback to popular if no personal data
+              
                 recs = db.query(Movie).order_by(Movie.popularity.desc()).limit(5).all()
                 titles = ", ".join([m.title for m in recs])
                 return {
@@ -67,7 +100,6 @@ async def ask_chatbot(
                 "movies": [{"id": m.id, "title": m.title, "poster": m.poster_url or m.poster_path} for m in recs]
             }
 
-    # 3.5 RANDOM / SURPRISE
     if "rastgele" in text or "şans" in text or "farketmez" in text or "sürpriz" in text:
         from sqlalchemy.sql.expression import func
         random_movie = db.query(Movie).order_by(func.random()).first()
@@ -77,7 +109,7 @@ async def ask_chatbot(
                 "movies": [{"id": random_movie.id, "title": random_movie.title, "poster": random_movie.poster_url or random_movie.poster_path}]
             }
 
-    # 4. GENRE SEARCH (Enhanced)
+    
     genres_map = {
         "aksiyon": "Action", "komedi": "Comedy", "dram": "Drama",
         "bilim": "Science Fiction", "kurgu": "Science Fiction", 
@@ -91,7 +123,7 @@ async def ask_chatbot(
         if k in text:
             movies = (db.query(Movie)
                       .filter(Movie.genres.like(f"%{v}%"))
-                      .order_by(Movie.vote_average.desc()) # Quality first
+                      .order_by(Movie.vote_average.desc()) 
                       .limit(5).all())
             return {
                 "reply": f"İşte senin için en iyi {k.capitalize()} filmleri:",
@@ -129,22 +161,6 @@ async def ask_chatbot(
     
     if "kimsin" in text or "adın ne" in text:
         return {"reply": "Ben FilmRec Asistanı. Senin film zevkini çözüp nokta atışı öneriler yapmak için buradayım."}
-
-    # ⚡ DEFAULT SEARCH (Actor/Director/Title)
-    if len(text) > 2:
-        results = (db.query(Movie).filter(
-            or_(
-                Movie.title.ilike(f"%{text}%"),
-                Movie.cast.ilike(f"%{text}%"),
-                Movie.directors.ilike(f"%{text}%")
-            )
-        ).limit(3).all())
-        
-        if results:
-            return {
-                "reply": f"Veritabanımda '{text}' ile ilgili şunları buldum:",
-                "movies": [{"id": m.id, "title": m.title, "poster": m.poster_url or m.poster_path} for m in results]
-            }
 
     # FALLBACK
     return {

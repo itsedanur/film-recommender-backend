@@ -12,3 +12,4 @@ numpy
 scikit-learn
 better_profanity
 fastapi-mail
+psycopg2-binary

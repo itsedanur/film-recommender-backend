@@ -8,9 +8,9 @@ import os
 from app.db import get_db
 from app.models.users import User
 
-# ----------------------------------------
+
 # ŞİFRELEME AYARLARI (ARGON2)
-# ----------------------------------------
+
 pwd_context = CryptContext(
     schemes=["argon2"],
     deprecated="auto"
@@ -22,9 +22,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
 ALGORITHM = "HS256"
 
 
-# ----------------------------------------
+
 # PASSWORD HELPERS
-# ----------------------------------------
+
 def hash_password(password: str) -> str:
     """Kullanıcı şifresini hash'ler."""
     return pwd_context.hash(password)
@@ -35,9 +35,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# ----------------------------------------
 # CURRENT USER GETTER
-# ----------------------------------------
+
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
@@ -62,9 +61,9 @@ def get_current_user(
             detail="Token expired or invalid"
         )
 
-# ----------------------------------------
+
 # OPTIONAL AUTH (Chatbot vb için)
-# ----------------------------------------
+
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 def get_current_user_optional(

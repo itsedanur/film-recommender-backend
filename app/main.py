@@ -60,7 +60,7 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-# 🚀 STARTUP SIRASI – ÇOK ÖNEMLİ
+
 @app.on_event("startup")
 def startup_event():
     print("🔥 STARTUP BAŞLADI...")

@@ -15,9 +15,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-# --------------------------------------------------------------------
-# CURRENT USER UTILITY
-# --------------------------------------------------------------------
+
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
 
     payload = decode_access_token(token)
@@ -31,40 +29,67 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-# --------------------------------------------------------------------
-# REGISTER
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# MAIL CONFIG
-# --------------------------------------------------------------------
+
 import os
-import uuid
+import uuid  
+from dotenv import load_dotenv
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from pydantic import EmailStr
 
+load_dotenv() 
+
+
 conf = ConnectionConfig(
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "edanurunal02@gmail.com"),
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "sqal xnky hgup jwlg"),
-    MAIL_FROM = os.getenv("MAIL_FROM", "edanurunal02@gmail.com"),
-    MAIL_PORT = 587,
-    MAIL_SERVER = "smtp.gmail.com",
+    MAIL_USERNAME = os.getenv("MAILTRAP_USERNAME"),
+    MAIL_PASSWORD = os.getenv("MAILTRAP_PASSWORD"),
+    MAIL_FROM = os.getenv("MAIL_FROM", "no-reply@filmrecommender.com"),
+    MAIL_PORT = int(os.getenv("MAILTRAP_PORT", 2525)),
+    MAIL_SERVER = os.getenv("MAILTRAP_HOST", "sandbox.smtp.mailtrap.io"),
     MAIL_STARTTLS = True,
     MAIL_SSL_TLS = False,
     USE_CREDENTIALS = True,
     VALIDATE_CERTS = True
 )
 
-# --------------------------------------------------------------------
-# REGISTER
-# --------------------------------------------------------------------
+async def send_verification_email(email: str, token: str):
+    verification_link = f"http://localhost:8000/auth/verify-email?token={token}"
+    
+    html = f"""
+    <p>Merhaba,</p>
+    <p>Hesabını doğrulamak için lütfen aşağıdaki linke tıkla:</p>
+    <p><a href="{verification_link}">{verification_link}</a></p>
+    <p>FilmRec Ekibi</p>
+    """
+
+    message = MessageSchema(
+        subject="FilmRec Doğrulama",
+        recipients=[email],
+        body=html,
+        subtype=MessageType.html
+    )
+
+    fm = FastMail(conf)
+    
+    try:
+        await fm.send_message(message)
+        print("SMTP Mail sent successfully via Mailtrap Sandbox")
+    except Exception as e:
+        print(f"SMTP Mail sending failed: {e}")
+    
+   
+    print(f"\n{'='*40}")
+    print(f"DOĞRULAMA LİNKİ (DEBUG):")
+    print(f"{verification_link}")
+    print(f"{'='*40}\n")
+    
+
 @router.post("/register")
 async def register(data: UserRegister, db: Session = Depends(get_db)):
 
-    # email exists?
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(400, "Bu e-posta adresi zaten kullanımda")
 
-    # username exists?
+   
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(400, "Bu kullanıcı adı zaten kullanımda")
 
@@ -75,7 +100,7 @@ async def register(data: UserRegister, db: Session = Depends(get_db)):
         email=data.email,
         name=data.username,
         hashed_password=hash_password(data.password),
-        is_verified=1,  # Auto-verify since mail is not configured
+        is_verified=0,  
         verification_token=token
     )
 
@@ -84,26 +109,22 @@ async def register(data: UserRegister, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_user)
         
-        # SEND EMAIL (Skipped effectively since is_verified=1, but code remains if they fix env later)
-        # We can keep the mail logic or suppress it. Let's suppress the error deeper.
-        # For this specific user request, they want to LOGIN.
-        
-        # ... Mail sending logic ...
-        # (Keeping existing mail logic for reference, but since verified=1, user can login immediately)
+        # Send Mail (Async)
+        await send_verification_email(new_user.email, token)
         
     except IntegrityError:
         db.rollback()
         raise HTTPException(400, "Kullanıcı oluşturulurken hata oluştu")
     except Exception as e:
+       
         print(f"Mail Error: {e}")
-        pass
+        # pass
 
-    return {"msg": "Kayıt başarılı! Giriş yapabilirsiniz."}
+    return {"msg": "Kayıt başarılı! Lütfen e-postanızı kontrol edip doğrulama işlemini tamamlayın."}
 
 
-# --------------------------------------------------------------------
-# VERIFY EMAIL
-# --------------------------------------------------------------------
+
+
 @router.get("/verify-email")
 def verify_email(token: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.verification_token == token).first()
@@ -120,9 +141,7 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     return {"msg": "Hesap başarıyla doğrulandı! Şimdi giriş yapabilirsiniz."}
 
 
-# --------------------------------------------------------------------
-# LOGIN
-# --------------------------------------------------------------------
+
 @router.post("/login", response_model=Token)
 def login(data: UserLogin, db: Session = Depends(get_db)):
 
@@ -134,16 +153,15 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     if not verify_password(data.password, user.hashed_password):
         raise HTTPException(400, "Geçersiz e-posta veya şifre")
         
-    # if not user.is_verified:
-    #     raise HTTPException(400, "Lütfen önce e-posta adresinizi doğrulayın.")
+   
+    if not user.is_verified:
+         raise HTTPException(400, "Lütfen önce e-posta adresinizi doğrulayın.")
 
     token = create_access_token({"user_id": user.id})
     return Token(access_token=token, token_type="bearer")
 
 
-# --------------------------------------------------------------------
-# UPDATE AVATAR
-# --------------------------------------------------------------------
+
 @router.put("/avatar")
 def update_avatar(body: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     avatar_url = body.get("avatar_url")
@@ -155,9 +173,7 @@ def update_avatar(body: dict, db: Session = Depends(get_db), current_user: User 
     return {"msg": "Profil fotoğrafı güncellendi", "avatar_url": avatar_url}
 
 
-# --------------------------------------------------------------------
-# DELETE ACCOUNT
-# --------------------------------------------------------------------
+
 @router.delete("/me")
 def delete_account(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db.delete(current_user)
@@ -165,9 +181,8 @@ def delete_account(db: Session = Depends(get_db), current_user: User = Depends(g
     return {"msg": "Hesap başarıyla silindi"}
 
 
-# --------------------------------------------------------------------
-# GET CURRENT LOGGED-IN USER
-# --------------------------------------------------------------------
+
+
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):
     return current_user

@@ -14,7 +14,7 @@ router = APIRouter(
     tags=["Admin"]
 )
 
-# --- DEPENDENCY ---
+
 def get_current_admin(current_user: User = Depends(get_current_user)):
     if current_user.is_admin != 1:
         raise HTTPException(
@@ -23,7 +23,7 @@ def get_current_admin(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
-# --- SCHEMAS ---
+
 class MovieCreate(BaseModel):
     title: str
     overview: Optional[str] = None
@@ -64,33 +64,26 @@ def get_analytics(db: Session = Depends(get_db), admin: User = Depends(get_curre
         review_count = db.query(Review).filter(Review.created_at >= start_of_day, Review.created_at < end_of_day).count()
         
         weekly_data.append({
-            "day": d.strftime("%a"), # Mon, Tue...
+            "day": d.strftime("%a"), 
             "new_users": user_count,
             "new_reviews": review_count
         })
 
-    # "Geography" is simulated as we don't track IPs.
-    # We will just return a static list or random distribution for visual purposes,
-    # but labeled as "Simulated" in frontend if needed.
-    # Or keep it as is since user asked for "real data" but we can't provide geo without IPs.
+
     geography = [
-            {"country": "Türkiye", "count": db.query(User).count()}, # All users assumed TR for now
+            {"country": "Türkiye", "count": db.query(User).count()}, 
             {"country": "Diğer", "count": 0}
     ]
 
     return {
-        "weekly_activity": weekly_data, # changed key from weekly_visitors
+        "weekly_activity": weekly_data, 
         "geography": geography
     }
 
-# --- MOVIE MANAGEMENT ---
+
 @router.post("/movies")
 def add_movie(movie: MovieCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
-    # TMDB ID is mandatory in schema but let's make a fake one for manual add or handle it?
-    # Actually Movie model has tmdb_id unique non-null. 
-    # For manual add, we need a unique tmdb_id. Maybe use negative numbers or a large offset?
-    # Let's auto-generate a random one or use a sequence if not provided?
-    # Simplification: Use a random large number for now.
+    
     import random
     fake_tmdb_id = random.randint(1000000, 9999999)
     
@@ -100,7 +93,7 @@ def add_movie(movie: MovieCreate, db: Session = Depends(get_db), admin: User = D
         overview=movie.overview,
         release_date=movie.release_date,
         poster_url=movie.poster_url,
-        genres=movie.genres, # JSON string expected? Or list? Model says Text.
+        genres=movie.genres, 
         popularity=0,
         vote_average=0,
         vote_count=0
@@ -120,7 +113,7 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db), admin: User = Dep
     db.commit()
     return {"message": "Movie deleted"}
 
-# --- USER MANAGEMENT ---
+
 @router.get("/users")
 def list_users(db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
     return db.query(User).all()
@@ -131,7 +124,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depen
     if not user:
         raise HTTPException(404, "User not found")
     
-    # Prevent deleting yourself?
+    
     if user.id == admin.id:
         raise HTTPException(400, "Kendinizi silemezsiniz.")
 

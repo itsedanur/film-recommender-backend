@@ -16,6 +16,7 @@ export default function MovieDetail() {
   const [showCollections, setShowCollections] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [comment, setComment] = useState("");
+  const [isSpoiler, setIsSpoiler] = useState(false); // 🔥 New state
   const [isWatched, setIsWatched] = useState(false);
   const [userRating, setUserRating] = useState(0);
 
@@ -151,7 +152,7 @@ export default function MovieDetail() {
     if (!comment.trim()) return;
     try {
       // Backend expects 'text' as a query parameter
-      await apiFetch(`/reviews/add/${id}?text=${encodeURIComponent(comment)}`, {
+      await apiFetch(`/reviews/add/${id}?text=${encodeURIComponent(comment)}&is_spoiler=${isSpoiler}`, {
         method: "POST"
       });
 
@@ -205,7 +206,18 @@ export default function MovieDetail() {
                 <div className="director-row">
                   <span className="director-label">Yönetmen:</span>
                   <span className="director-name">
-                    {movie.directors.map(d => d.name).join(", ")}
+                    {movie.directors.map((d, i) => (
+                      <React.Fragment key={i}>
+                        <span
+                          onClick={() => navigate(`/person/${d.name}`)}
+                          className="clickable-person"
+                          style={{ cursor: "pointer", textDecoration: "underline" }}
+                        >
+                          {d.name}
+                        </span>
+                        {i < movie.directors.length - 1 && ", "}
+                      </React.Fragment>
+                    ))}
                   </span>
                 </div>
               )}
@@ -331,7 +343,12 @@ export default function MovieDetail() {
           <h2 className="section-title">Oyuncular</h2>
           <div className="cast-scroller">
             {movie.cast.slice(0, 5).map((c) => (
-              <div key={c.id || c.name} className="cast-card-mini">
+              <div
+                key={c.id || c.name}
+                className="cast-card-mini"
+                onClick={() => navigate(`/person/${c.name}`)}
+                style={{ cursor: "pointer" }}
+              >
                 <img
                   src={c.profile_path ? `https://image.tmdb.org/t/p/w200${c.profile_path}` : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
                   alt={c.name}
@@ -367,27 +384,63 @@ export default function MovieDetail() {
         <div className="reviews-list">
           {reviews.length === 0 && <p style={{ color: '#777' }}>Henüz yorum yapılmamış. İlk yorumu sen yap!</p>}
           {reviews.map(r => (
-            <div key={r.id} className="review-card">
-              <div className="review-header">
-                <span className="review-user">{r.user.username}</span>
-                <span className="review-date">{new Date(r.created_at).toLocaleDateString()}</span>
-              </div>
-              <p className="review-text">{r.text}</p>
-            </div>
+            <ReviewItem key={r.id} review={r} />
           ))}
         </div>
 
         {/* Input */}
         <div className="comment-input-area">
           <textarea
-            placeholder="Film hakkında ne düşünüyorsun? (Spoiler verme!)"
+            placeholder="Film hakkında ne düşünüyorsun?"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
-          <button className="btn-send" onClick={handleSendComment}>Yorumu Gönder</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+            <label style={{ color: '#ccc', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={isSpoiler}
+                onChange={(e) => setIsSpoiler(e.target.checked)}
+              />
+              Spoiler içeriyor
+            </label>
+            <button className="btn-send" onClick={handleSendComment}>Yorumu Gönder</button>
+          </div>
         </div>
       </div>
 
+    </div>
+  );
+}
+
+function ReviewItem({ review }) {
+  const [revealed, setRevealed] = useState(false);
+  const isHidden = review.is_spoiler && !revealed;
+
+  return (
+    <div className="review-card">
+      <div className="review-header">
+        <span className="review-user">{review.user.username}</span>
+        <span className="review-date">{new Date(review.created_at).toLocaleDateString()}</span>
+      </div>
+
+      <div style={{ position: 'relative' }}>
+        <p className={`review-text ${isHidden ? 'spoiler-blur' : ''}`}>
+          {review.text}
+        </p>
+
+        {isHidden && (
+          <div className="spoiler-overlay">
+            <span style={{ color: '#ff4444', fontWeight: 'bold', marginBottom: 5 }}>SPOILER</span>
+            <button
+              className="btn-reveal"
+              onClick={() => setRevealed(true)}
+            >
+              Göster
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

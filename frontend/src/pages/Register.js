@@ -29,8 +29,9 @@ function Register() {
 
       // Kayıt başarılı
       setMessage("✅ Kayıt başarılı! Hesap doğrulama linki e-posta adresinize gönderildi (Simülasyon). Şimdi giriş yapabilirsiniz.");
-      // Otomatik yönlendirme
-      setTimeout(() => navigate("/login"), 2000);
+      // Remove auto-login, show success message
+      alert("Kayıt başarılı! Lütfen e-posta adresinize (Mailtrap kutunuza) gönderilen doğrulama linkine tıklayın.");
+      navigate("/login");
 
     } catch (err) {
       console.log("REGISTER ERROR:", err);

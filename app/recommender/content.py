@@ -13,13 +13,13 @@ def recommend_by_content(movies, seed_movie=None, top_n=20):
     if not movies:
         return []
 
-    # ----------------------------------------
-    # 1) Metin birleşimi (title + overview + GENRES + DIRECTORS + CAST)
-    # ----------------------------------------
+   
+    # 1)  (title + overview + GENRES + DIRECTORS + CAST)
+   
     corpus = []
     
     for m in movies:
-        # Genre'leri ağırlıklı ekle (5x)
+        
         genre_str = ""
         try:
             if m.genres:
@@ -29,7 +29,7 @@ def recommend_by_content(movies, seed_movie=None, top_n=20):
         except:
             pass
 
-        # Director (3x)
+        
         director_str = ""
         try:
             if m.directors:
@@ -39,13 +39,12 @@ def recommend_by_content(movies, seed_movie=None, top_n=20):
         except:
             pass
 
-        # Cast (Top 3 actors, 2x)
         cast_str = ""
         try:
             if m.cast:
                 c_list = json.loads(m.cast) if isinstance(m.cast, str) else m.cast
                 if isinstance(c_list, list):
-                    # Space removal is good for distinct actor names "TomCruise" vs "TomHanks"
+                    
                     cast_str = " ".join([c.get('name', '').replace(" ", "") for c in c_list[:3]] * 2)
         except:
             pass
@@ -53,18 +52,18 @@ def recommend_by_content(movies, seed_movie=None, top_n=20):
         text = f"{m.title} {m.overview or ''} {genre_str} {director_str} {cast_str}"
         corpus.append(text)
 
-    # ----------------------------------------
-    # 2) TF-IDF modeli
-    # ----------------------------------------
+   
+    
+   
     tfidf = TfidfVectorizer(stop_words="english")
     try:
         matrix = tfidf.fit_transform(corpus)
     except ValueError:
         return []
 
-    # ----------------------------------------
-    # 3) Anchor (kıyaslama yapılacak film)
-    # ----------------------------------------
+    
+    
+    
     if seed_movie:
         try:
             anchor_index = movies.index(seed_movie)
@@ -73,9 +72,9 @@ def recommend_by_content(movies, seed_movie=None, top_n=20):
     else:
         anchor_index = np.argmax([m.popularity for m in movies])
 
-    # ----------------------------------------
-    # 4) Benzerlikleri hesapla
-    # ----------------------------------------
+    
+   
+    
     similarities = cosine_similarity(matrix[anchor_index:anchor_index + 1], matrix).flatten()
 
     # Kendini çıkar
@@ -84,9 +83,9 @@ def recommend_by_content(movies, seed_movie=None, top_n=20):
     # En benzer filmleri bul
     indices = similarities.argsort()[::-1][:top_n]
 
-    # ----------------------------------------
+    
     # 5) JSON formatında döndür
-    # ----------------------------------------
+    
     recommended = []
     for idx in indices:
         m = movies[idx]

@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [users, setUsers] = useState([]);
+  const [messages, setMessages] = useState([]); // New state for messages
 
   const [movies, setMovies] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,11 +24,11 @@ export default function AdminDashboard() {
     }
     if (activeTab === "users") loadUsers();
     if (activeTab === "movies") loadMovies();
+    if (activeTab === "messages") loadMessages(); // Load messages
   }, [activeTab]);
 
   // ... (existing functions)
 
-  // Filtered Movies
   const filteredMovies = movies.filter(m =>
     m.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -57,6 +58,34 @@ export default function AdminDashboard() {
       setUsers(data);
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  // MESSAGES FUNCTIONALITY
+  async function loadMessages() {
+    try {
+      const data = await apiFetch("/contact/messages");
+      setMessages(data);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleReply(id, oldReply) {
+    const replyText = prompt("Cevabınızı yazın:", oldReply || "");
+    if (replyText === null) return; // Cancelled
+
+    try {
+      await apiFetch(`/contact/${id}/reply`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: { reply: replyText } // Fixed: Pass object directly
+      });
+      alert("Cevap gönderildi!");
+      loadMessages(); // Refresh list
+    } catch (err) {
+      const msg = err.detail || err.message || JSON.stringify(err);
+      alert("Hata: " + (typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg));
     }
   }
 
@@ -115,11 +144,11 @@ export default function AdminDashboard() {
       await apiFetch(`/admin/users/${id}/role`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_admin: newStatus })
+        body: { is_admin: newStatus } // Fixed: Pass object directly
       });
       setUsers(users.map(u => u.id === id ? { ...u, is_admin: newStatus } : u));
     } catch (err) {
-      alert("Hata: " + err.message);
+      alert("Hata: " + (err.detail || err.message));
     }
   }
 
@@ -151,6 +180,7 @@ export default function AdminDashboard() {
           <li className={activeTab === "dashboard" ? "active" : ""} onClick={() => setActiveTab("dashboard")}>Dashboard</li>
           <li className={activeTab === "users" ? "active" : ""} onClick={() => setActiveTab("users")}>Kullanıcılar</li>
           <li className={activeTab === "movies" ? "active" : ""} onClick={() => setActiveTab("movies")}>Film Yönetimi</li>
+          <li className={activeTab === "messages" ? "active" : ""} onClick={() => setActiveTab("messages")}>Mesajlar</li>
           <li className={activeTab === "settings" ? "active" : ""} onClick={() => setActiveTab("settings")}>Ayarlar</li>
         </ul>
       </div>
@@ -329,6 +359,51 @@ export default function AdminDashboard() {
                       <td>{m.release_date ? m.release_date.split("-")[0] : "-"}</td>
                       <td>
                         <button className="btn-small delete" onClick={() => handleDeleteMovie(m.id)}>Sil</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* MESSAGES TAB */}
+        {activeTab === "messages" && (
+          <div>
+            <h2>Gelen Mesajlar</h2>
+            <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Tarih</th>
+                    <th>Gönderen</th>
+                    <th>Mesaj</th>
+                    <th>Cevap Durumu</th>
+                    <th>İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {messages.map(m => (
+                    <tr key={m.id}>
+                      <td>{new Date(m.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <div><strong>{m.name}</strong></div>
+                        <div style={{ fontSize: '0.9em', color: '#aaa' }}>{m.email}</div>
+                      </td>
+                      <td style={{ maxWidth: '300px' }}>{m.message}</td>
+                      <td>
+                        {m.reply ? (
+                          <span style={{ color: 'lime' }}>Cevaplandı</span>
+                        ) : (
+                          <span style={{ color: 'orange' }}>Bekliyor</span>
+                        )}
+                        {m.reply && <div style={{ fontSize: '0.8em', color: '#999', marginTop: 5 }}>Cevap: {m.reply}</div>}
+                      </td>
+                      <td>
+                        <button className="btn-small" onClick={() => handleReply(m.id, m.reply)}>
+                          {m.reply ? "Düzenle" : "Cevapla"}
+                        </button>
                       </td>
                     </tr>
                   ))}

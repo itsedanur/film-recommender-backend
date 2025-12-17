@@ -3,35 +3,59 @@ import "./About.css";
 
 export default function About() {
   return (
-    <div className="about-container">
-      <div className="about-box">
-        <h1 className="about-title">FilmRec Hakkında</h1>
-        <p className="about-subtitle">
-          Film ve dizi dünyasını keşfetmen için tasarlanmış yapay zeka destekli bir film asistanı.
-        </p>
+    <div className="about-page">
+      {/* HERO SECTION */}
+      <section className="about-hero">
+        <div className="hero-content">
+          <h1 className="hero-title fade-in-up">Sinemanın Yeni Çağı</h1>
+          <p className="hero-subtitle fade-in-up delay-1">
+            Yapay zeka destekli kişisel film asistanınla tanış.
+            <br />
+            Senin zevkini öğrenen, hisseden ve anlayan bir deneyim.
+          </p>
+        </div>
+        <div className="hero-glow"></div>
+      </section>
 
-        <div className="about-features">
-          <div className="feature-card">
-            <h3>🎯 Akıllı Öneriler</h3>
-            <p>Beğenilerine göre kişiye özel film ve dizi tavsiyeleri sunar.</p>
+
+      {/* FEATURES GRID */}
+      <section className="features-section">
+        <h2 className="section-header fade-in-up delay-3">Neden FilmRec?</h2>
+
+        <div className="features-grid">
+          <div className="feature-card glass-card fade-in-up delay-4">
+            <div className="icon-box">🧠</div>
+            <h3>Yapay Zeka Destekli</h3>
+            <p>Siz izledikçe gelişen, zevkinizi öğrenen deep-learning algoritmaları.</p>
           </div>
 
-          <div className="feature-card">
-            <h3>⭐ İncelemeler</h3>
-            <p>IMDb ve yapay zeka analizleriyle doğru karar vermeni sağlar.</p>
+          <div className="feature-card glass-card fade-in-up delay-5">
+            <div className="icon-box">✨</div>
+            <h3>Kişiselleştirilmiş</h3>
+            <p>Sadece popüler olanı değil, sizin gerçekten seveceğiniz gizli cevherleri bulur.</p>
           </div>
 
-          <div className="feature-card">
-            <h3>📌 Listeler Oluştur</h3>
-            <p>Favorilerini kaydet, organize et ve istediğin zaman geri dön.</p>
+          <div className="feature-card glass-card fade-in-up delay-6">
+            <div className="icon-box">💬</div>
+            <h3>Canlı Topluluk</h3>
+            <p>Film tutkunlarıyla tartışın, listeler oluşturun ve deneyimlerinizi paylaşın.</p>
           </div>
 
-          <div className="feature-card">
-            <h3>📣 Topluluk</h3>
-            <p>Film sevenlerle yorum yap, tartış, fikirlerini paylaş.</p>
+          <div className="feature-card glass-card fade-in-up delay-7">
+            <div className="icon-box">🔍</div>
+            <h3>Detaylı Analiz</h3>
+            <p>Oyuncular, yönetmenler ve detaylı vizyon bilgileri parmaklarınızın ucunda.</p>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* FOOTER QUOTE */}
+      <section className="quote-section fade-in-up delay-8">
+        <blockquote>
+          "Sinema, hayatın sıkıcı kısımlarının kesilip atılmış halidir."
+        </blockquote>
+        <cite>- Alfred Hitchcock</cite>
+      </section>
     </div>
   );
 }

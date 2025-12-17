@@ -1,7 +1,7 @@
 import sqlite3
 import datetime
 
-# Database path
+
 DB_PATH = "app/movies.db"
 
 def update_db():
@@ -9,10 +9,10 @@ def update_db():
     cursor = conn.cursor()
 
     try:
-        # Add created_at to users
+        
         print("Updating users table...")
         cursor.execute("ALTER TABLE users ADD COLUMN created_at TIMESTAMP")
-        # Set default value for existing rows
+        
         now = datetime.datetime.utcnow()
         cursor.execute("UPDATE users SET created_at = ?", (now,))
         print("Success: users table updated.")
@@ -20,7 +20,7 @@ def update_db():
         print(f"Skipped users: {e}")
 
     try:
-        # Add created_at to reviews
+        
         print("Updating reviews table...")
         cursor.execute("ALTER TABLE reviews ADD COLUMN created_at TIMESTAMP")
         now = datetime.datetime.utcnow()

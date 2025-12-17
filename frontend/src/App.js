@@ -17,8 +17,9 @@ import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import Profile from "./pages/Profile";
 import WatchList from "./pages/watchlist";
-import AdminRoute from "./components/AdminRoute"; // Added this import
+import AdminRoute from "./components/AdminRoute";
 import Chatbot from "./components/Chatbot";
+import PersonSearch from "./pages/PersonSearch"; // 🔥 Import
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
         {/* Film Detayları */}
         <Route path="/movies/:id" element={<MovieDetail />} />
         <Route path="/upcoming/:id" element={<MovieDetail type="upcoming" />} />
+        <Route path="/person/:name" element={<PersonSearch />} /> {/* 🔥 New Route */}
 
         {/* Diziler */}
         <Route

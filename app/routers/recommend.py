@@ -21,13 +21,13 @@ def ai_recommend(db: Session = Depends(get_db)):
     return recommend_by_content(movies, top_n=20)
 
 
-# ---- 👇 YENİ: Kullanıcıya özel ----
+
 @router.get("/user")
 def user_recommend(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    # 1) Kullanıcının beğendiği / yüksek puan verdiği filmler
+    
     liked_ids = [
         l.movie_id
         for l in db.query(Like).filter(Like.user_id == current_user.id).all()
@@ -60,23 +60,23 @@ def user_recommend(
             for m in movies
         ]
 
-    # 2) Bu filmlerden içerik tabanlı öneri
+   
     seed_movies = db.query(Movie).filter(Movie.id.in_(base_ids)).all()
     all_movies = db.query(Movie).all()
 
-    # basitçe tüm filmlerden content-based öneri alıyoruz
+    
     from app.recommender.content import recommend_by_content
 
     content_recs = recommend_by_content(all_movies, top_n=50)
 
-    # Kullanıcının zaten gördüklerini filtrele
+   
     seen_ids = set(base_ids)
     result = [m for m in content_recs if m["id"] not in seen_ids][:20]
 
     return result
 
 
-# ---- 👇 Yeni: Bir filme göre öneri (content-based) ----
+
 @router.get("/{movie_id}")
 def recommend_for_movie(movie_id: int, db: Session = Depends(get_db)):
     # 1) Verilen filmi al

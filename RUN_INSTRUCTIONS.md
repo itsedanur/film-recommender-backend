@@ -7,14 +7,14 @@ Eğer paketleri yüklemediyseniz:
 
 **Backend için:**
 ```bash
-cd /Users/edanurunal/film-recommender-backend/film-recommender-backend
+cd /Users/edanurunal/film-recommender-backend-1
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
 **Frontend için:**
 ```bash
-cd /Users/edanurunal/film-recommender-backend/film-recommender-backend/frontend
+cd /Users/edanurunal/film-recommender-backend-1/frontend
 npm install
 ```
 
@@ -29,7 +29,7 @@ Veritabanı ve API'yi çalıştırır.
 
 1.  Doğru klasöre gidin:
     ```bash
-    cd /Users/edanurunal/film-recommender-backend/film-recommender-backend
+    cd /Users/edanurunal/film-recommender-backend-1
     ```
 2.  Sanal ortamı aktif edin:
     ```bash
@@ -47,7 +47,7 @@ Web sitesini çalıştırır.
 
 1.  Frontend klasörüne gidin:
     ```bash
-    cd /Users/edanurunal/film-recommender-backend/film-recommender-backend/frontend
+    cd /Users/edanurunal/film-recommender-backend-1/frontend
     ```
 2.  Uygulamayı başlatın:
     ```bash

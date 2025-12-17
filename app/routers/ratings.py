@@ -22,11 +22,11 @@ def add_rating(
     Varsa günceller (Upsert mantığı daha mantıklı olabilir ama şimdilik yeni ekleme/hata).
     """
     
-    # Check if already rated
+    
     existing = db.query(Rating).filter(Rating.user_id == current_user.id, Rating.movie_id == data.movie_id).first()
     
     if existing:
-        # Update existing rating
+        
         existing.score = data.score
         db.commit()
         return {"message": "Puan güncellendi", "id": existing.id, "score": existing.score}

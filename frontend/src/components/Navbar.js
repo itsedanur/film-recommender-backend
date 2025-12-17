@@ -23,7 +23,7 @@ export default function Navbar() {
         <Link to="/movies">Filmler</Link>
         <Link to="/trending">Trendler</Link>
         <Link to="/upcoming">Yakında</Link>
-        <Link to="/watchlist">İzlediklerim</Link> {/* Renamed from Listem */}
+        <Link to="/watchlist">Kütüphanem</Link>
         <Link to="/about">Hakkımızda</Link>
         <Link to="/contact">İletişim</Link>
       </div>

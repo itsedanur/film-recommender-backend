@@ -19,14 +19,14 @@ from app.schemas.users import UserUpdate, UserOut
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-# GET /users - Kullanıcıları Listele
+# Kullanıcıları Listele
 @router.get("/", response_model=list[UserOut])
 def list_users(db: Session = Depends(get_db)):
     users = db.query(User).all()
     return users
 
 
-# GET /users/{id} - Tek Kullanıcı Detayı
+# Tek Kullanıcı Detayı
 @router.get("/{user_id}", response_model=UserOut)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
@@ -35,7 +35,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
-# PUT /users/{id} - Kullanıcı Güncelleme
+# Kullanıcı Güncelleme
 @router.put("/{user_id}", response_model=UserOut)
 def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
@@ -67,7 +67,7 @@ def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db)):
     return user
 
 
-# DELETE /users/{id} - Kullanıcı Silme
+# Kullanıcı Silme
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
@@ -85,4 +85,3 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
 
     return
-# ...existing

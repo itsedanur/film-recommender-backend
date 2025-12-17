@@ -10,7 +10,7 @@ from app.routers.movies import convert
 
 router = APIRouter(prefix="/watched", tags=["Watched"])
 
-# 1. MARK AS WATCHED (TOGGLE)
+
 @router.post("/{movie_id}")
 def mark_watched(movie_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
@@ -20,21 +20,21 @@ def mark_watched(movie_id: int, db: Session = Depends(get_db), current_user: Use
     existing = db.query(Watched).filter(Watched.user_id == current_user.id, Watched.movie_id == movie_id).first()
     
     if existing:
-        # Toggle OFF: Remove if exists
+        
         db.delete(existing)
         db.commit()
         return {"msg": "Film izlediklerimden kaldırıldı", "status": "removed"}
     else:
-        # Toggle ON: Add
+        
         new_watched = Watched(user_id=current_user.id, movie_id=movie_id)
         db.add(new_watched)
         db.commit()
         return {"msg": "Film izlediklerim listesine eklendi", "status": "added"}
 
-# 2. LIST WATCHED MOVIES
+
 @router.get("/", response_model=list[MovieOut])
 def list_watched(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    # Join with Movies to get details
+    
     items = db.query(Watched).filter(Watched.user_id == current_user.id).order_by(Watched.created_at.desc()).all()
     
     results = []
@@ -44,7 +44,7 @@ def list_watched(db: Session = Depends(get_db), current_user: User = Depends(get
             
     return results
 
-# 3. CHECK IF WATCHED
+
 @router.get("/{movie_id}/check")
 def check_watched(movie_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     exists = db.query(Watched).filter(Watched.user_id == current_user.id, Watched.movie_id == movie_id).first()

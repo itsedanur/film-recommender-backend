@@ -6,7 +6,8 @@ sys.path.append(os.getcwd())
 
 from app.db import SessionLocal
 from app.models.users import User
-from app.models.collection import Collection  # 🔥 Fix for relations
+from app.models.collection import Collection
+from app.models.watched import Watched # 🔥 Fix for Watched relation
 
 def make_admin():
     db = SessionLocal()

@@ -13,16 +13,14 @@ from app.services.tmdb_import import fetch_upcoming_movies
 router = APIRouter(prefix="/movies", tags=["Movies"])
 
 
-# -----------------------------
-#  UNIVERSAL CONVERT FUNCTION
-# -----------------------------
+
 def convert(movie: Movie, tmdb_extra=None):
 
     # DIRECTOR
     if tmdb_extra and tmdb_extra.get("director"):
         directors = [{"name": tmdb_extra["director"]}]
     else:
-        # Fallback to DB
+        
         try:
             directors = json.loads(movie.directors) if movie.directors else [{"name": "Bilinmiyor"}]
         except:
@@ -32,7 +30,7 @@ def convert(movie: Movie, tmdb_extra=None):
     if tmdb_extra and tmdb_extra.get("cast"):
         cast = tmdb_extra["cast"]
     else:
-        # Fallback to DB
+        
         try:
             cast = json.loads(movie.cast) if movie.cast else []
         except:
@@ -44,7 +42,7 @@ def convert(movie: Movie, tmdb_extra=None):
     except:
         raw_genres = []
 
-    # FIX: Eğer liste stringlerden oluşuyorsa (Manuel eklenenler: ["Komedi"]) -> Dict listesine çevir
+    
     if raw_genres and isinstance(raw_genres, list) and len(raw_genres) > 0 and isinstance(raw_genres[0], str):
         genres = [{"id": 0, "name": g} for g in raw_genres]
     else:
@@ -60,20 +58,20 @@ def convert(movie: Movie, tmdb_extra=None):
             else movie.title
         ),
 
-        # ÖZET — TR veya veritabanı
+        
         overview=(
             tmdb_extra.get("overview")
             if (tmdb_extra and tmdb_extra.get("overview"))
             else movie.overview
         ),
 
-        # ⭐⭐ TR ÖZET — veritabanındaki otomatik çeviri
-        overview_tr=movie.overview_tr,      # 🔥 en önemli satır
+       
+        overview_tr=movie.overview_tr,      
 
         poster_path=movie.poster_path,
         poster_url=movie.poster_url,
-        trailer_url=getattr(movie, "trailer_url", None), # Map new field
-        backdrop_path=getattr(movie, "backdrop_path", None), # Add backdrop support if model has it, or handle cleanly
+        trailer_url=getattr(movie, "trailer_url", None), 
+        backdrop_path=getattr(movie, "backdrop_path", None), 
 
         release_date=(
             tmdb_extra.get("release_date")
@@ -91,46 +89,45 @@ def convert(movie: Movie, tmdb_extra=None):
     )
 
 
-# -----------------------------
+
 # TÜM FİLMLER (1500+)
-# -----------------------------
+
 @router.get("/all", response_model=list[MovieOut])
 def all_movies(db: Session = Depends(get_db)):
     movies = db.query(Movie).order_by(Movie.popularity.desc()).all()
     return [convert(m) for m in movies]
 
 
-# -----------------------------
 # POPÜLER (20)
-# -----------------------------
+
 @router.get("/popular", response_model=list[MovieOut])
 def popular(db: Session = Depends(get_db)):
     movies = db.query(Movie).order_by(Movie.popularity.desc()).limit(20).all()
     return [convert(m) for m in movies]
 
 
-# -----------------------------
+
 # EN İYİLER (vote_average)
-# -----------------------------
+
 @router.get("/top", response_model=list[MovieOut])
 def top_rated(db: Session = Depends(get_db)):
     movies = db.query(Movie).order_by(Movie.vote_average.desc()).limit(20).all()
     return [convert(m) for m in movies]
 
 
-# -----------------------------
+
 # YAKINDA (TMDB)
-# -----------------------------
+
 @router.get("/upcoming", response_model=list[MovieOut])
 def upcoming():
     upcoming = fetch_upcoming_movies()
 
     return [
         MovieOut(
-            id=m["id"],              # TMDB ID
+            id=m["id"],              
             title=m["title"],
             overview=m.get("overview", ""),
-            overview_tr=None,        # upcoming filmlerde yok
+            overview_tr=None,        
             poster_path=m.get("poster_path"),
             poster_url=None,
             release_date=m.get("release_date"),
@@ -145,9 +142,9 @@ def upcoming():
     ]
 
 
-# -----------------------------
+
 # SEARCH
-# -----------------------------
+
 @router.get("/search/{query}", response_model=list[MovieOut])
 def search(query: str, db: Session = Depends(get_db)):
     from sqlalchemy import or_
@@ -161,12 +158,12 @@ def search(query: str, db: Session = Depends(get_db)):
     return [convert(m) for m in movies]
 
 
-# -----------------------------
+
 # YAKINDA: TEK FİLM DETAY (TMDB)
-# -----------------------------
+
 @router.get("/upcoming/detail/{tmdb_id}")
 def upcoming_detail(tmdb_id: int):
-    detail = get_movie_details(tmdb_id)   # TR başlık + TR özet
+    detail = get_movie_details(tmdb_id)   
     stats = get_movie_stats(tmdb_id)
 
     return {
@@ -183,9 +180,9 @@ def upcoming_detail(tmdb_id: int):
     }
 
 
-# -----------------------------
+
 # VERİTABANI FİLM DETAY
-# -----------------------------
+
 @router.get("/{movie_id}", response_model=MovieOut)
 def get_movie(movie_id: int, db: Session = Depends(get_db)):
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
@@ -193,7 +190,7 @@ def get_movie(movie_id: int, db: Session = Depends(get_db)):
     if not movie:
         raise HTTPException(404, "Movie not found")
 
-    # TMDB’den güncel TR bilgiler
+    
     tmdb_extra = get_movie_details(movie.tmdb_id)
     stats = get_movie_stats(movie.tmdb_id)
 
@@ -206,31 +203,28 @@ def get_movie(movie_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return convert(movie, tmdb_extra)
-# -----------------------------
+
 # BENZER FİLMLER (Genre-Based)
-# -----------------------------
+
 @router.get("/{movie_id}/similar", response_model=list[MovieOut])
 def similar_movies(movie_id: int, db: Session = Depends(get_db)):
     movie = db.query(Movie).filter(Movie.id == movie_id).first()
     if not movie:
         raise HTTPException(404, "Movie not found")
 
-    # KULLANILAN MANTIK: Gelişmiş İçerik Tabanlı Öneri (TF-IDF + Cast + Director + Genre)
+   
     from app.recommender.content import recommend_by_content
     
-    # Tüm filmleri (veya geniş bir havuzu) çekelim
-    # Gerçek canlıda her requestte 1500 film çekmek yavaş olabilir ama 1500 film için sorun değil.
-    # Optimizasyon için: Cache mekanizması eklenebilir.
+  
     
     all_movies_pool = db.query(Movie).all()
     
     recommendations = recommend_by_content(all_movies_pool, seed_movie=movie, top_n=6)
     
-    # Model dönüşümü
+    
     results = []
     for r in recommendations:
-        # movie ID'sinden DB objesini bul (veya recommendations zaten data içeriyor)
-        # recommend_by_content dict dönüyor, biz DB object arıyoruz convert için
+        
         m_obj = next((m for m in all_movies_pool if m.id == r['id']), None)
         if m_obj:
             results.append(convert(m_obj))

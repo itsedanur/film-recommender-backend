@@ -1,33 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import "./Contact.css";
-import { getCaptcha, sendContactMessage } from "../api";
+import { sendContactMessage } from "../api";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
-    captcha_answer: "",
   });
-  const [captcha, setCaptcha] = useState(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchCaptcha();
-  }, []);
-
-  const fetchCaptcha = async () => {
-    try {
-      const data = await getCaptcha();
-      setCaptcha(data);
-    } catch (err) {
-      console.error("Captcha error:", err);
-    }
-  };
+  const recaptchaRef = useRef(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCaptchaChange = (token) => {
+    setCaptchaToken(token);
   };
 
   const handleSubmit = async (e) => {
@@ -36,27 +29,25 @@ export default function Contact() {
     setStatus({ type: "", message: "" });
 
     try {
-      if (!captcha) {
-        throw new Error("Captcha yüklenemedi, lütfen sayfayı yenileyin.");
+      if (!captchaToken) {
+        throw new Error("Lütfen 'Robot değilim' kutucuğunu işaretleyin.");
       }
 
       await sendContactMessage({
         name: formData.name,
         email: formData.email,
         message: formData.message,
-        captcha_key: captcha.captcha_key,
-        captcha_answer: parseInt(formData.captcha_answer),
+        captcha_token: captchaToken,
       });
 
       setStatus({ type: "success", message: "Mesajınız başarıyla iletildi! 🚀" });
-      setFormData({ name: "", email: "", message: "", captcha_answer: "" });
-      fetchCaptcha(); // Yeni captcha getir
-    } catch (err) {
-      setStatus({ type: "error", message: err.detail || "Bir hata oluştu." });
-      // Hata durumunda da yeni captcha gerekebilir (özellikle süresi dolduysa)
-      if (err.detail && (err.detail.includes("süresi doldu") || err.detail.includes("Yanlış"))) {
-        fetchCaptcha();
+      setFormData({ name: "", email: "", message: "" });
+      setCaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
       }
+    } catch (err) {
+      setStatus({ type: "error", message: err.detail || err.message || "Bir hata oluştu." });
     } finally {
       setLoading(false);
     }
@@ -99,23 +90,13 @@ export default function Contact() {
             required
           ></textarea>
 
-          {captcha && (
-            <div className="captcha-container">
-              <label htmlFor="captcha_answer" className="captcha-label">
-                Güvenlik Sorusu: <strong>{captcha.question}</strong>
-              </label>
-              <input
-                type="number"
-                name="captcha_answer"
-                id="captcha_answer"
-                placeholder="Cevap"
-                value={formData.captcha_answer}
-                onChange={handleChange}
-                required
-                className="captcha-input"
-              />
-            </div>
-          )}
+          <div className="captcha-container" style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // TEST KEY - REPLACE IN PRODUCTION
+              onChange={handleCaptchaChange}
+            />
+          </div>
 
           <button type="submit" className="contact-btn" disabled={loading}>
             {loading ? "Gönderiliyor..." : "Gönder 🚀"}

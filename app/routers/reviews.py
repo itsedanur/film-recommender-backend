@@ -16,6 +16,7 @@ router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
 @router.post("/add/{movie_id}")
 def add_review(movie_id: int, text: str, 
+               is_spoiler: bool = False, 
                db: Session = Depends(get_db),
                current_user: User = Depends(get_current_user)):
 
@@ -29,7 +30,12 @@ def add_review(movie_id: int, text: str,
     if not movie:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Film bulunamadı")
 
-    review = Review(text=text, user_id=current_user.id, movie_id=movie_id)
+    review = Review(
+        text=text, 
+        user_id=current_user.id, 
+        movie_id=movie_id,
+        is_spoiler=is_spoiler 
+    )
     db.add(review)
     db.commit()
     db.refresh(review)
@@ -43,14 +49,15 @@ def get_movie_reviews(movie_id: int, db: Session = Depends(get_db)):
         Review.movie_id == movie_id
     ).order_by(Review.created_at.desc()).all()
     
-    # Return with User info
+    
     results = []
     for r in reviews:
         user = db.query(User).filter(User.id == r.user_id).first()
         results.append({
             "id": r.id,
             "text": r.text,
-            "created_at": r.created_at, # datetime objesi, JSON response'da oto string olur
+            "is_spoiler": r.is_spoiler, 
+            "created_at": r.created_at, 
             "user": {
                 "username": user.username if user else "Anonim"
             }

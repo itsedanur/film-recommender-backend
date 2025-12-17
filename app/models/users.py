@@ -13,8 +13,7 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=True)
-    avatar_url = Column(String, nullable=True) # 🔥 YENİ: Profil Fotoğrafı
-
+    avatar_url = Column(String, nullable=True) 
 
     # Şifre artık hashed_password olarak saklanıyor
     hashed_password = Column(String, nullable=False)
@@ -23,7 +22,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Verification
-    is_verified = Column(Integer, default=0) # Using Integer for consistency (0/1) or Boolean if supported by DB
+    is_verified = Column(Integer, default=0) 
     verification_token = Column(String, nullable=True)
 
     # ilişkiler
@@ -32,4 +31,4 @@ class User(Base):
     lists = relationship("ListItem", back_populates="user", cascade="all, delete-orphan")
     likes = relationship("Like", back_populates="user", cascade="all, delete-orphan")
     collections = relationship("Collection", back_populates="user", cascade="all, delete-orphan")
-    watched = relationship("Watched", back_populates="user", cascade="all, delete-orphan") # 🔥 YENİ: İzlediklerim
+    watched = relationship("Watched", back_populates="user", cascade="all, delete-orphan") 

@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.orm import Session
 from app.db import SessionLocal
-# 🔥 Import ALL models to ensure SQLAlchemy registry is complete
+
 from app.models.users import User
 from app.models.movie import Movie
 from app.models.collection import Collection
@@ -15,11 +15,11 @@ from app.models.review import Review
 from app.models.like import Like
 from app.models.lists import ListItem
 
-from app.utils.tmdb import get_movie_details # Uses tmdb_import internally or similar logic
+from app.utils.tmdb import get_movie_details 
 import requests
 from deep_translator import GoogleTranslator
 
-# TMDB Setup
+
 from dotenv import load_dotenv
 load_dotenv()
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
@@ -54,11 +54,10 @@ def translate_movies():
     print(f"Checking {len(movies)} movies...")
     
     for m in movies:
-        # 1. Check existing TR overview
+        
         current_tr = m.overview_tr
         
-        # If explicitly missing or we want to force check, do it.
-        # Let's try to get from TMDB first.
+       
         tmdb_overview = fetch_tmdb_tr(m.tmdb_id)
         
         final_tr = ""
@@ -66,16 +65,16 @@ def translate_movies():
         if tmdb_overview and len(tmdb_overview) > 10:
             final_tr = tmdb_overview
         
-        # Check for Turkish Title
+        
         tmdb_title = fetch_tmdb_tr_title(m.tmdb_id)
         if tmdb_title and tmdb_title != m.title:
              print(f"  Title Change: {m.title} -> {tmdb_title}")
              m.title = tmdb_title
              updated += 1
              
-        # Fallback for overview if TMDB failed
+        
         if not final_tr:
-            # TMDB failed or empty. Translate the English overview.
+           
             english_ov = m.overview
             if english_ov and len(english_ov) > 5:
                 try:
@@ -84,10 +83,10 @@ def translate_movies():
                 except Exception as e:
                     print(f"Translation failed for {m.title}: {e}")
                     
-        # Update DB if we found a better TR overview
+        
         if final_tr:
             m.overview_tr = final_tr
-            # Also update main overview to be TR as per user request (make EVERYTHING Turkish)
+            
             m.overview = final_tr 
             updated += 1
             print(f"✅ Translated Overview: {m.title[:20]}...")

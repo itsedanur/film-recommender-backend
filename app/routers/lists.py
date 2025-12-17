@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.models.lists import ListItem
 from app.models.movie import Movie
 from app.schemas.movies import MovieOut
-from app.core.security import get_current_user  # sende hangi dosyadaysa oradan import et
+from app.core.security import get_current_user  
 from app.db import SessionLocal
 from app.db import get_db
 

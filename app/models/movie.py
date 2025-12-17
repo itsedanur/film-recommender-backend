@@ -12,19 +12,18 @@ class Movie(Base):
 
     title = Column(String, nullable=False)
     overview = Column(Text)
-    overview_tr = Column(Text)  # 🔥 EKLENEN ALAN (Türkçe çeviri buraya)
+    overview_tr = Column(Text)  
 
-    # Poster info
+   
     poster_path = Column(String)
     poster_url = Column(String)
-    trailer_url = Column(String) # 🔥 NEW FIELD
+    trailer_url = Column(String) 
 
     release_date = Column(String)
 
-    # NEW fields from TMDB
-    genres = Column(Text)      # JSON string
-    cast = Column(Text)        # JSON string
-    directors = Column(Text)   # JSON string
+    genres = Column(Text)      
+    cast = Column(Text)       
+    directors = Column(Text)  
 
     popularity = Column(Float)
     vote_average = Column(Float)

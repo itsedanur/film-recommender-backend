@@ -14,20 +14,15 @@ export default function WatchList() {
   const loadData = async () => {
     setLoading(true);
     try {
-      // 1. Koleksiyonlar
+      // 1. Koleksiyonlar (Custom lists)
       const cols = await apiFetch("/collections/");
       setCollections(cols);
 
       // 2. Beğenilenler
-      // Note: /likes/me returns { movie_ids: [...] }. We need full movie details.
-      // Ideally backend should return full movies for /likes/me.
-      // Let's check backend implementation of /likes/me. It returns movie_ids only.
-      // This is a problem. I either update backend or fetch details one by one (bad).
-      // I will update backend to return full movie objects for /likes/me.
-      // For now, let's assume I will fix backend in next step. I'll write frontend expecting list of movies.
-
-      const likesData = await apiFetch("/likes/me/details"); // New endpoint I will create
-      setLikedMovies(likesData);
+      // We can use /user/collections which returns { liked: [...], watchlist: [...], watched: [...] }
+      // The backend seems to return full movie objects here based on Profile.js usage.
+      const userCols = await apiFetch("/user/collections");
+      setLikedMovies(userCols.liked || []);
 
     } catch (err) {
       console.error("Veri yüklenemedi", err);
@@ -59,7 +54,7 @@ export default function WatchList() {
 
   // Koleksiyon Sil
   const handleDeleteList = async (id) => {
-    if (!window.confirm("Bu listeyi silmek istediğine emin misin?")) return;
+    if (!window.confirm("Bu listeyi silmek istediğinize emin misiniz?")) return;
     try {
       await apiFetch(`/collections/${id}`, { method: "DELETE" });
       setCollections(prev => prev.filter(c => c.id !== id));
@@ -70,7 +65,6 @@ export default function WatchList() {
   const handleRemoveMovieFromCol = async (collectionId, movieId) => {
     try {
       await apiFetch(`/collections/${collectionId}/remove/${movieId}`, { method: "DELETE" });
-      // UI update optimization
       const newCols = collections.map(c => {
         if (c.id === collectionId) {
           return { ...c, movies: c.movies.filter(m => m.id !== movieId) };
@@ -85,7 +79,7 @@ export default function WatchList() {
   const handleUnlike = async (movieId) => {
     try {
       await apiFetch(`/likes/toggle/${movieId}`, { method: 'POST' });
-      setLikedMovies(prev => prev.filter(m => m.id !== movieId));
+      setLikedMovies(prev => prev.filter(m => (m.movie_id || m.id) !== movieId));
     } catch (err) { alert("İşlem başarısız"); }
   };
 
@@ -95,7 +89,7 @@ export default function WatchList() {
     <div className="page-container container watchlist-page">
       <header className="watchlist-header">
         <h1 className="page-title">Kütüphanem</h1>
-        <p className="page-subtitle">Kaydettiğin filmler ve oluşturduğun listeler tek bir yerde.</p>
+        <p className="page-subtitle">Beğendiğin filmler ve kişisel listelerin burada.</p>
       </header>
 
       {/* --- BEĞENDİKLERİM --- */}
@@ -110,7 +104,7 @@ export default function WatchList() {
             likedMovies.map((movie) => (
               <div key={movie.id} className="movie-grid-item">
                 <MovieCard
-                  id={movie.id}
+                  id={movie.movie_id || movie.id}
                   title={movie.title}
                   poster_path={movie.poster_path}
                   poster_url={movie.poster_url}
@@ -118,7 +112,7 @@ export default function WatchList() {
                 />
                 <button
                   className="remove-movie-btn"
-                  onClick={() => handleUnlike(movie.id)}
+                  onClick={() => handleUnlike(movie.movie_id || movie.id)}
                   title="Beğenmekten Vazgeç"
                 >
                   ✕

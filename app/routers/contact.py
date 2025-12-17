@@ -1,76 +1,99 @@
 # app/routers/contact.py
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from app.db import get_db
-from app.models.contact import ContactMessage, CaptchaSession
-import uuid
-import random
-from datetime import datetime, timedelta
+from app.models.contact import ContactMessage
+from app.routers.auth import get_current_user
+from app.models.users import User
+import requests
+import os
+from datetime import datetime
 
 router = APIRouter(prefix="/contact", tags=["Contact"])
 
-@router.get("/captcha")
-def get_captcha(db: Session = Depends(get_db)):
-    """
-    Generates a simple math captcha (A + B).
-    Returns a UUID and the question string.
-    """
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    result = a + b
+
+RECAPTCHA_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+
+# -- ADMIN ENDPOINTS --
+
+@router.get("/messages")
+def get_all_messages(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Yetkisiz erişim")
     
-    session_id = str(uuid.uuid4())
-    expires = datetime.now() + timedelta(minutes=5)
+    messages = db.query(ContactMessage).order_by(desc(ContactMessage.created_at)).all()
+    return messages
+
+@router.put("/{message_id}/reply")
+def reply_message(
+    message_id: int,
+    reply: str = Body(..., embed=True),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Yetkisiz erişim")
     
-    # Save to DB
-    # Clean up old captchas first (optional, but good for hygiene)
-    # in a real app, run a cron job. Here we just add new one.
+    msg = db.query(ContactMessage).filter(ContactMessage.id == message_id).first()
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mesaj bulunamadı")
+        
+    msg.reply = reply
+    msg.replied_at = datetime.now()
     
-    new_captcha = CaptchaSession(
-        uuid=session_id,
-        answer=result,
-        expires_at=expires
-    )
-    db.add(new_captcha)
     db.commit()
+    db.refresh(msg)
+    return msg
+
+# -- USER ENDPOINTS --
+
+@router.get("/my-messages")
+def get_my_messages(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     
-    return {
-        "captcha_key": session_id,
-        "question": f"{a} + {b} = ?"
-    }
+    messages = db.query(ContactMessage).filter(
+        ContactMessage.email == current_user.email
+    ).order_by(desc(ContactMessage.created_at)).all()
+    
+    return messages
+
+# -- PUBLIC ENDPOINTS --
 
 @router.post("/send")
 def send_contact_message(
     name: str = Body(...),
     email: str = Body(...),
     message: str = Body(...),
-    captcha_key: str = Body(...),
-    captcha_answer: int = Body(...),
+    captcha_token: str = Body(...),
     db: Session = Depends(get_db)
 ):
     """
-    Verifies captcha and saves the contact message.
+    Verifies google reCAPTCHA and saves the contact message.
     """
-    # 1. Verify Captcha
-    captcha_entry = db.query(CaptchaSession).filter(CaptchaSession.uuid == captcha_key).first()
+  
+    verify_url = "https://www.google.com/recaptcha/api/siteverify"
+    data = {
+        "secret": RECAPTCHA_SECRET_KEY,
+        "response": captcha_token
+    }
     
-    if not captcha_entry:
-        raise HTTPException(status_code=400, detail="Geçersiz veya süresi dolmuş Captcha.")
-    
-    if datetime.now() > captcha_entry.expires_at:
-        db.delete(captcha_entry)
-        db.commit()
-        raise HTTPException(status_code=400, detail="Captcha süresi doldu, lütfen yenileyin.")
+    try:
+        response = requests.post(verify_url, data=data)
+        result = response.json()
+    except Exception as e:
+         raise HTTPException(status_code=500, detail=f"Captcha doğrulama servisine ulaşılamadı: {str(e)}")
+
+    if not result.get("success"):
         
-    if captcha_entry.answer != captcha_answer:
-        # Increment attempt or just fail? For simple implementation, fail.
-        # Ideally we might delete it to prevent retry spam with same key, but let's keep it simple.
-        raise HTTPException(status_code=400, detail="Yanlış Captcha cevabı.")
-        
-    # Correct answer -> Delete captcha used (one-time use)
-    db.delete(captcha_entry)
-    
-    # 2. Save Message
+        raise HTTPException(status_code=400, detail="Captcha doğrulaması başarısız. Lütfen tekrar deneyin.")
+
+
     new_message = ContactMessage(
         name=name,
         email=email,

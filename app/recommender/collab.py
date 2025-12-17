@@ -11,7 +11,7 @@ def recommend_by_collab(user_id, ratings, movies, top_n=20):
     user_ratings = {r.movie_id: r.rating for r in ratings if r.user_id == user_id}
 
     if not user_ratings:
-        return []   # Kullanıcı hiç film oylamamışsa öneri yok
+        return []   
 
     # Filmlere göre kullanıcı listesi
     movie_to_users = defaultdict(dict)
