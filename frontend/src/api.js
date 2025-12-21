@@ -9,15 +9,15 @@ if (!API_URL) {
 // Sondaki slash'ı temizle
 API_URL = API_URL.replace(/\/$/, "");
 
-export async function apiFetch(path, { method = "GET", body = null } = {}) {
+export async function apiFetch(path, { method = "GET", body = null, token = null } = {}) {
   if (!path.startsWith("/")) path = "/" + path;
 
   const url = API_URL + path;
 
   const headers = { "Content-Type": "application/json" };
 
-  const token = localStorage.getItem("token");
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const finalToken = token || localStorage.getItem("token") || sessionStorage.getItem("token"); // 🔥 Check passed token, then local, then session
+  if (finalToken) headers["Authorization"] = `Bearer ${finalToken}`;
 
   let res;
   try {

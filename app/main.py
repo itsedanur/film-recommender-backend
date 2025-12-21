@@ -16,7 +16,7 @@ from app.db import Base, engine, SessionLocal
 from app.utils.init_data import import_local_movies, update_movie_posters
 from app.services.tmdb_import import add_movies_to_db
 from app.routers import (
-    auth, users, movies, ratings, reviews, lists, admin, recommend, likes, collections, chatbot, contact, watched, user_actions
+    auth, users, movies, ratings, reviews, lists, admin, recommend, likes, collections, chatbot, contact, watched, user_actions, dashboard
 )
 
 
@@ -94,6 +94,7 @@ app.include_router(chatbot.router)
 app.include_router(contact.router)
 app.include_router(watched.router)
 app.include_router(user_actions.router)
+app.include_router(dashboard.router)
 
 @app.get("/")
 def home():

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import "./MovieDetail.css";
 
-export default function MovieDetail() {
+export default function MovieDetail({ type }) { // 🔥 Receive type prop
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ export default function MovieDetail() {
   const [showCollections, setShowCollections] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [comment, setComment] = useState("");
-  const [isSpoiler, setIsSpoiler] = useState(false); // 🔥 New state
+  const [isSpoiler, setIsSpoiler] = useState(false);
   const [isWatched, setIsWatched] = useState(false);
   const [userRating, setUserRating] = useState(0);
 
@@ -25,8 +25,16 @@ export default function MovieDetail() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await apiFetch(`/movies/${id}`);
+        // 🔥 Determine endpoint based on type
+        const endpoint = type === "upcoming"
+          ? `/movies/upcoming/detail/${id}`
+          : `/movies/${id}`;
+
+        const data = await apiFetch(endpoint);
         setMovie(data);
+
+        // If it's upcoming, skip similar/reviews/actions as the movie isn't in DB
+        if (type === "upcoming") return;
 
         try {
           const simData = await apiFetch(`/movies/${id}/similar`);
@@ -59,6 +67,7 @@ export default function MovieDetail() {
 
 
     async function loadReviews() {
+      if (type === "upcoming") return; // Skip for upcoming
       try {
         const data = await apiFetch(`/reviews/${id}`);
         if (Array.isArray(data)) setReviews(data);
@@ -67,7 +76,7 @@ export default function MovieDetail() {
 
     load();
     loadReviews();
-  }, [id, token]);
+  }, [id, token, type]);
 
   if (!movie) return <div className="loading-screen">Yükleniyor...</div>;
 
@@ -235,53 +244,89 @@ export default function MovieDetail() {
               </p>
 
               {/* Buttons */}
-              <div className="action-buttons">
-                {movie.trailer_url && (
-                  <button className="btn-action primary trailer-btn" onClick={() => setShowTrailer(true)}>
-                    ▶ Fragman İzle
+              {/* Buttons Refactored: Netflix Style (No Emojis, SVGs) */}
+              <div className="action-buttons-container">
+
+                {/* 1. Primary Play/Trailer Button */}
+                {movie.trailer_url ? (
+                  <button className="netflix-primary-btn" onClick={() => setShowTrailer(true)}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="btn-icon">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <span>Şimdi İzle</span>
+                  </button>
+                ) : (
+                  <button className="netflix-primary-btn disabled" disabled>
+                    <span>Fragman Yok</span>
                   </button>
                 )}
-                <button className="btn-action secondary interact-btn" onClick={handleLike}>❤️ Beğen</button>
-                <button
-                  className={`btn-action secondary interact-btn ${isWatched ? "watched-active" : ""}`}
-                  onClick={handleToggleWatched}
-                  style={isWatched ? { background: "green", color: "white", borderColor: "green" } : {}}
-                >
-                  {isWatched ? "✅ İzledim" : "👁️ İzledim"}
-                </button>
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <button className="btn-action secondary interact-btn" onClick={() => setShowCollections(!showCollections)}>📌 Listeye Ekle</button>
-                  {/* Collection Popover */}
-                  {showCollections && (
-                    <div className="collection-popover">
-                      {collections.length > 0 ? (
-                        collections.map(col => (
-                          <div key={col.id} className="popover-item" onClick={() => handleAddToCollection(col.id)}>
-                            📂 {col.name}
+
+                {/* 2. Secondary Icon Actions using SVGs */}
+                <div className="netflix-actions-row">
+
+                  {/* List Action */}
+                  <div className="action-item" onClick={() => setShowCollections(!showCollections)}>
+                    <div className="icon-box">
+                      {/* Plus Icon */}
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                      </svg>
+                    </div>
+                    <span className="action-label">Listem</span>
+
+                    {/* Collection Popover (Re-integrated) */}
+                    {showCollections && (
+                      <div className="collection-popover">
+                        {collections.length > 0 ? (
+                          collections.map(col => (
+                            <div key={col.id} className="popover-item" onClick={(e) => { e.stopPropagation(); handleAddToCollection(col.id); }}>
+                              📂 {col.name}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="popover-empty">
+                            <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '8px' }}>Liste yok.</p>
+                            <button onClick={(e) => { e.stopPropagation(); navigate('/watchlist'); }} className="create-list-btn">
+                              + Oluştur
+                            </button>
                           </div>
-                        ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Like Action */}
+                  <div className="action-item" onClick={handleLike}>
+                    <div className="icon-box">
+                      {/* Thumbs Up / Heart Like SVG */}
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                      </svg>
+                    </div>
+                    <span className="action-label">Beğen</span>
+                  </div>
+
+                  {/* Watched Action */}
+                  <div className="action-item" onClick={handleToggleWatched}>
+                    <div className="icon-box">
+                      {isWatched ? (
+                        /* Check Icon when watched */
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#46d369" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
                       ) : (
-                        <div className="popover-empty">
-                          <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '8px' }}>Henüz listeniz yok.</p>
-                          <button
-                            onClick={() => navigate('/watchlist')}
-                            style={{
-                              width: '100%',
-                              background: '#333',
-                              color: 'white',
-                              border: 'none',
-                              padding: '6px',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '0.8rem'
-                            }}
-                          >
-                            + Liste Oluştur
-                          </button>
-                        </div>
+                        /* Eye Icon when not watched */
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
                       )}
                     </div>
-                  )}
+                    <span className={`action-label ${isWatched ? "text-green" : ""}`}>
+                      {isWatched ? "İzlendi" : "İzledim"}
+                    </span>
+                  </div>
+
                 </div>
               </div>
 

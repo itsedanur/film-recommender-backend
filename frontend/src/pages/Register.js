@@ -9,12 +9,24 @@ function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
 
   async function handleRegister(e) {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      setMessage("❌ Şifreler eşleşmiyor!");
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      setMessage("❌ Şifre en az bir büyük harf içermelidir!");
+      return;
+    }
+
     setMessage("Kayıt olunuyor...");
 
     try {
@@ -81,6 +93,15 @@ function Register() {
             placeholder="Şifre (en az 6 karakter)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <input
+            type="password"
+            className="auth-input"
+            placeholder="Şifre Tekrar"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
 

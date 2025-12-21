@@ -98,6 +98,34 @@
     border-bottom-left-radius: 2px;
 }
 
+/* Suggestions Chips */
+.chat-suggestions {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+    gap: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #555 transparent;
+}
+
+.chip {
+    background: #333;
+    border: 1px solid #444;
+    color: #eee;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.chip:hover {
+    background: #e50914;
+    border-color: #e50914;
+    color: white;
+}
+
 .chat-bubble.user {
     align-self: flex-end;
     background: #007aff;

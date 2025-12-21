@@ -79,6 +79,12 @@ def convert(movie: Movie, tmdb_extra=None):
             else movie.release_date
         ),
 
+        original_language=(
+            tmdb_extra.get("original_language")
+            if (tmdb_extra and tmdb_extra.get("original_language"))
+            else movie.original_language
+        ),
+
         vote_average=movie.vote_average,
         vote_count=movie.vote_count,
         popularity=movie.popularity,

@@ -75,9 +75,38 @@ def get_analytics(db: Session = Depends(get_db), admin: User = Depends(get_curre
             {"country": "Diğer", "count": 0}
     ]
 
+    # TOP MOVIES
+    top_movies = (
+        db.query(Movie)
+        .order_by(Movie.vote_average.desc(), Movie.vote_count.desc())
+        .limit(10)
+        .all()
+    )
+    
+    # GENRE DISTRIBUTION
+    # Naive implementation: Iterate all movies (OK for ~1500, careful for 1M+)
+    import json
+    all_movies = db.query(Movie).all()
+    genre_counts = {}
+    for m in all_movies:
+        if m.genres:
+            try:
+                g_list = json.loads(m.genres)
+                for g in g_list:
+                    g_name = g['name']
+                    genre_counts[g_name] = genre_counts.get(g_name, 0) + 1
+            except:
+                pass
+                
+    genre_data = [{"name": k, "value": v} for k, v in genre_counts.items()]
+    # Sort by value desc
+    genre_data.sort(key=lambda x: x['value'], reverse=True)
+
     return {
         "weekly_activity": weekly_data, 
-        "geography": geography
+        "geography": geography,
+        "top_movies": [{"id": m.id, "title": m.title, "rating": m.vote_average, "count": m.vote_count} for m in top_movies],
+        "genre_distribution": genre_data[:10] # Top 10 genres
     }
 
 

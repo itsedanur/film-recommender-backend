@@ -7,6 +7,7 @@ import "./Auth.css";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true); // Default checked
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
@@ -22,13 +23,12 @@ function Login() {
         body: { email, password },
       });
 
-      // Token sakla
-      localStorage.setItem("token", data.access_token);
-
+      // Token logic handled by AuthContext now
       // Kullanıcı bilgisi backend’den çek (auth/me)
-      const me = await apiFetch("/auth/me");
+      // 🔥 Pass token explicitly because it's not in storage yet!
+      const me = await apiFetch("/auth/me", { token: data.access_token });
 
-      login(me, data.access_token);
+      login(me, data.access_token, rememberMe);
 
       setMessage("Giriş başarılı! Yönlendiriliyorsunuz...");
       setTimeout(() => navigate("/"), 800);
@@ -61,6 +61,18 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+
+          <div className="auth-options">
+            <label className="remember-me">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              Beni Hatırla
+            </label>
+          </div>
+
 
           <button className="auth-button">Giriş Yap</button>
         </form>

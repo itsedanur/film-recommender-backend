@@ -4,8 +4,9 @@ import { apiFetch } from "../api";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  // Check both storages for token
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState(localStorage.getItem("token") || sessionStorage.getItem("token"));
 
   // Sayfa yenilenince token varsa backend'den kullanıcıyı yükle
   useEffect(() => {
@@ -16,6 +17,9 @@ export const AuthProvider = ({ children }) => {
         const data = await apiFetch("/auth/me");
         setUser(data);
       } catch {
+        // Token invalid, clear both
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
         setUser(null);
       }
     };
@@ -23,9 +27,14 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, [token]);
 
-  const login = (userInfo, token) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userInfo));
+  const login = (userInfo, token, rememberMe = true) => {
+    if (rememberMe) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userInfo));
+    } else {
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(userInfo));
+    }
 
     setToken(token);
     setUser(userInfo);
@@ -34,6 +43,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
 
     setToken(null);
     setUser(null);

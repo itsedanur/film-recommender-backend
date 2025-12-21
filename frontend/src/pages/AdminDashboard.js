@@ -207,8 +207,9 @@ export default function AdminDashboard() {
             {/* 🔥 GRAPHS SECTION (Real Data) */}
             {analytics && (
               <div className="charts-section">
+                {/* WEEKLY ACTIVITY */}
                 <div className="chart-box">
-                  <h3>Haftalık Aktivite (Son 7 Gün)</h3>
+                  <h3>Haftalık Aktivite</h3>
                   <div style={{ width: '100%', height: 300 }}>
                     <ResponsiveContainer>
                       <LineChart data={analytics.weekly_activity}>
@@ -217,29 +218,57 @@ export default function AdminDashboard() {
                         <YAxis stroke="#888" allowDecimals={false} />
                         <Tooltip contentStyle={{ backgroundColor: '#222', border: 'none', borderRadius: '8px' }} />
                         <Legend />
-                        <Line type="monotone" dataKey="new_users" name="Yeni Üye" stroke="#e50914" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                        <Line type="monotone" dataKey="new_users" name="Yeni Üye" stroke="#e50914" strokeWidth={3} dot={{ r: 4 }} />
                         <Line type="monotone" dataKey="new_reviews" name="Yeni Yorum" stroke="#ffa000" strokeWidth={3} dot={{ r: 4 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
+                {/* GENRE DISTRIBUTION (Pie Chart or Bar) */}
                 <div className="chart-box">
-                  <h3>Kullanıcı Dağılımı (Simüle)</h3>
+                  <h3>Popüler Türler</h3>
                   <div style={{ width: '100%', height: 300 }}>
                     <ResponsiveContainer>
-                      <BarChart data={analytics.geography} layout="vertical">
+                      <BarChart data={analytics.genre_distribution} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                         <XAxis type="number" stroke="#888" allowDecimals={false} />
-                        <YAxis dataKey="country" type="category" stroke="#888" width={100} />
+                        <YAxis dataKey="name" type="category" stroke="#888" width={100} />
                         <Tooltip contentStyle={{ backgroundColor: '#222', border: 'none', borderRadius: '8px' }} />
-                        <Bar dataKey="count" name="Kullanıcı Sayısı" fill="#333" radius={[0, 4, 4, 0]} barSize={30}>
-                          {/* Highlight Turkey or Top 1 */}
-                        </Bar>
+                        <Bar dataKey="value" name="Film Sayısı" fill="#007bff" radius={[0, 4, 4, 0]} barSize={20} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* TOP MOVIES TABLE */}
+            {analytics?.top_movies && (
+              <div className="section-block" style={{ marginTop: '20px' }}>
+                <h3>⭐ En İyi 10 Film (Puan & Popülerlik)</h3>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Film Başlığı</th>
+                      <th>Puan Ort.</th>
+                      <th>Oy Sayısı</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.top_movies.map(m => (
+                      <tr key={m.id}>
+                        <td>{m.id}</td>
+                        <td>{m.title}</td>
+                        <td>
+                          <span style={{ color: '#ffa000', fontWeight: 'bold' }}>★ {m.rating?.toFixed(1)}</span>
+                        </td>
+                        <td>{m.count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

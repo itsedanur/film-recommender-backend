@@ -50,6 +50,40 @@ export default function Chatbot() {
         }
     };
 
+    // Example Commands
+    const suggestions = [
+        "Bana film öner 🎲",
+        "Aksiyon filmi öner 💥",
+        "Brad Pitt filmleri 🎬",
+        "Komedi filmleri 😂",
+        "Yakındaki filmler 📅"
+    ];
+
+    const handleChipClick = (msg) => {
+        // Set input and auto send
+        setMessages(prev => [...prev, { sender: 'user', text: msg }]);
+        setLoading(true);
+
+        // Call API
+        apiFetch('/chatbot/ask', {
+            method: 'POST',
+            body: { message: msg }
+        })
+            .then(res => {
+                setMessages(prev => [...prev, {
+                    sender: 'bot',
+                    text: res.reply,
+                    movies: res.movies
+                }]);
+                if (res.action === 'login_redirect') navigate('/login');
+                if (res.action === 'navigate_upcoming') navigate('/upcoming');
+            })
+            .catch(() => {
+                setMessages(prev => [...prev, { sender: 'bot', text: 'Üzgünüm, şu an bağlantı kuramıyorum.' }]);
+            })
+            .finally(() => setLoading(false));
+    };
+
     return (
         <div className="chatbot-wrapper">
             {/* TOGGLE BUTTON */}
@@ -86,6 +120,13 @@ export default function Chatbot() {
                         ))}
                         {loading && <div className="chat-bubble bot typing">...</div>}
                         <div ref={bottomRef} />
+                    </div>
+
+                    {/* SUGGESTION CHIPS */}
+                    <div className="chat-suggestions">
+                        {suggestions.map((s, i) => (
+                            <button key={i} className="chip" onClick={() => handleChipClick(s)}>{s}</button>
+                        ))}
                     </div>
 
                     <div className="chat-input-area">

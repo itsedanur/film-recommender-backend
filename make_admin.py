@@ -1,5 +1,8 @@
 import sys
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Ensure app is in python path
 sys.path.append(os.getcwd())

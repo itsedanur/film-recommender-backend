@@ -20,6 +20,7 @@ class Movie(Base):
     trailer_url = Column(String) 
 
     release_date = Column(String)
+    original_language = Column(String) # new field
 
     genres = Column(Text)      
     cast = Column(Text)       

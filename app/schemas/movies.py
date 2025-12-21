@@ -13,6 +13,7 @@ class MovieBase(BaseModel):
     trailer_url: Optional[str] = None
     backdrop_path: Optional[str] = None
     release_date: Optional[str] = None
+    original_language: Optional[str] = None # 🔥 new field
 
     vote_average: Optional[float] = None
     vote_count: Optional[int] = None

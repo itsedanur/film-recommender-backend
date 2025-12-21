@@ -70,6 +70,8 @@ async def send_verification_email(email: str, token: str):
 
     fm = FastMail(conf)
     
+    print(f"📧 SMTP DEBUG: Host={conf.MAIL_SERVER} Port={conf.MAIL_PORT} User={conf.MAIL_USERNAME} SSL={conf.MAIL_SSL_TLS}")
+
     try:
         await fm.send_message(message)
         print("SMTP Mail sent successfully via Mailtrap Sandbox")

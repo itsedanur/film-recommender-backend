@@ -46,6 +46,7 @@ def get_movie_details(tmdb_id: int):
         "title": detail_res.get("title"),
         "poster_path": detail_res.get("poster_path"),
         "release_date": detail_res.get("release_date"),
+        "original_language": detail_res.get("original_language"),
     }
 
 
